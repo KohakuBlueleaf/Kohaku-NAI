@@ -1,3 +1,6 @@
+import os
+from hashlib import sha3_256
+
 import toml
 import gradio as gr
 
@@ -67,12 +70,12 @@ async def generate(mode, end_point, token, prompt, quality_tags, neg_prompt, see
     if mode == 'remote':
         if pswd:=client_config['end_point_pswd']:
             await remote_login(end_point, pswd)
-        return [await remote_gen(
+        img = await remote_gen(
             end_point,
             prompt, quality_tags, neg_prompt, seed, scale, 
             width, height, steps, sampler, scheduler, 
             smea, dyn, dyn_threshold, cfg_rescale
-        )]
+        )
     elif mode == 'local':
         set_token(token)
         img_data, _ = await generate_novelai_image(
@@ -82,9 +85,15 @@ async def generate(mode, end_point, token, prompt, quality_tags, neg_prompt, see
         )
         if not isinstance(img_data, bytes):
             return None
-        return [image_from_bytes(img_data)]
+        img = image_from_bytes(img_data)
     else:
         return None
+    
+    if client_config['autosave']:
+        save_path = client_config['save_path']
+        os.makedirs(name=save_path, exist_ok=True)
+        img_hash = sha3_256(img.tobytes()).hexdigest()
+        img.save(os.path.join(save_path, f'{img_hash}.png'), quality=0)
 
 
 def preview_ui():

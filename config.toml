@@ -12,6 +12,8 @@
 
 [client]
     mode = "remote"
+    autosave = true
+    save_path = "./data_client"
     end_point = "http://127.0.0.1:7000"
     end_point_pswd = "123456"
     token = ""
