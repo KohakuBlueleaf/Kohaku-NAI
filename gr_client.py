@@ -94,6 +94,8 @@ async def generate(mode, end_point, token, prompt, quality_tags, neg_prompt, see
         os.makedirs(name=save_path, exist_ok=True)
         img_hash = sha3_256(img.tobytes()).hexdigest()
         img.save(os.path.join(save_path, f'{img_hash}.png'), quality=0)
+    
+    return [img]
 
 
 def preview_ui():
