@@ -1,7 +1,5 @@
-# Kohaku-NAI
+# Kohaku-NAI[WIP]
 A simple Novel-AI client with more utilities built in it
-
-**WIP!**
 
 **Sharing your account to your friends may violate the NAI's TOS. USE AT YOUR OWN RISK!!!**
 
