@@ -75,7 +75,7 @@ async def gen(context: GenerateRequest, request: Request):
     is_free_gen = free_check(context.width, context.height, context.steps)
     if ((not signed and (always_require_auth or not is_free_gen))
         or (freeonly and not is_free_gen)):
-        return Response(json.dumps({'status': 'Config not allowed'}), 500)
+        return Response(json.dumps({'status': 'Config not allowed'}), 403)
     
     if request.session.get('signed', False):
         sub_folder = context.img_sub_folder
