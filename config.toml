@@ -6,12 +6,14 @@
     token = ""
     
     [gen_server.auth]
+        password = "123456"
         always_require_token = false
 
 
 [client]
     mode = "remote"
-    end_point = "http://127.0.0.1:7000/gen"
+    end_point = "http://127.0.0.1:7000"
+    end_point_pswd = "123456"
     token = ""
     default_quality = "best quality, amazing quality, very aesthetic, absurdres"
     default_neg = "lowres, {bad}, worst quality, jpeg artifacts, watermark, signature, artistic error, username, scan, text"

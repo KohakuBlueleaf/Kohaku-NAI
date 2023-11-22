@@ -55,8 +55,8 @@ def save_img(sub_folder: str, image: bytes, json: str):
 
 
 @app.post("/login")
-async def login(token: str, request: Request):
-    if token == server_config['token']:
+async def login(password: str, request: Request):
+    if password == auth_config['password']:
         request.session['signed'] = True
         return {"status": "login success"}
     else:

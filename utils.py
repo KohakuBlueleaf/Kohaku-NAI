@@ -28,8 +28,17 @@ def set_token(token):
     )
 
 
+async def remote_login(end_point, password):
+    payload = {"password": password}
+    response = await global_client.post(f'{end_point}/login', params=payload)
+    if response.status_code == 200:
+        return response.json()["status"]
+    else:
+        return None
+
+
 async def remote_gen(
-    end_point="http://127.0.0.1:7000/gen",
+    end_point="http://127.0.0.1:7000",
     input_text="",
     quality_tags="",
     negative_prompt="", 
@@ -60,7 +69,7 @@ async def remote_gen(
         "dyn_threshold": dyn_threshold,
         "chg_rescale": chg_rescale,
     }
-    response = await global_client.post(end_point, json=payload)
+    response = await global_client.post(f'{end_point}/gen', json=payload)
     if response.status_code == 200:
         mem_file = io.BytesIO(response.content)
         mem_file.seek(0)
