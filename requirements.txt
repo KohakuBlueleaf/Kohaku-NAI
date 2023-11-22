@@ -1,0 +1,6 @@
+fastapi
+httpx
+pillow
+numpy
+gradio
+toml

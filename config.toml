@@ -1,0 +1,17 @@
+[gen_server]
+    host = "0.0.0.0"
+    port = 7000
+    max_jobs = 5
+    save_path = "./data"
+    token = ""
+    
+    [gen_server.auth]
+        always_require_token = false
+
+
+[client]
+    mode = "remote"
+    end_point = "http://127.0.0.1:7000"
+    token = ""
+    default_quality = "best quality, amazing quality, very aesthetic, absurdres"
+    default_neg = "lowres, {bad}, worst quality, jpeg artifacts, watermark, signature, artistic error, username, scan, text"
