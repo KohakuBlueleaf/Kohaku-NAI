@@ -22,7 +22,7 @@ python -m pip install -r ./requirements.txt
 If you just want to use it as a standalone client.
 Just change the `mode` of the client section in the `config.toml` to `local` and put your NovelAI API token to `token`.
 
-If you want to connect to other generation servers, connect the server maintainer for endpoint url.
+If you want to connect to others' generation servers, contact the server maintainer for endpoint url.
 (If you are the server owner, check next section)
 
 And then use `python ./gr_client.py` to run it.
