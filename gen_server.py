@@ -83,7 +83,7 @@ async def gen(context: GenerateRequest, request: Request):
         sub_folder = 'free'
     
     async with generate_semaphore:
-        img_bytes, json = await generate_novelai_image(
+        img_bytes, json_payload = await generate_novelai_image(
             context.prompt,
             context.neg_prompt,
             context.seed,
@@ -100,7 +100,7 @@ async def gen(context: GenerateRequest, request: Request):
         )
     
     await asyncio.get_running_loop().run_in_executor(
-        save_worker, save_img, sub_folder, img_bytes, json
+        save_worker, save_img, sub_folder, img_bytes, json_payload
     )
     
     return Response(img_bytes, media_type="image/png")
