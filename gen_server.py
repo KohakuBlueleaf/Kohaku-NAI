@@ -59,7 +59,7 @@ async def login(password: str, request: Request):
     for auth in auth_configs:
         if password == auth['password']:
             request.session['signed'] = True
-            request.session['freeonly'] = auth['freeonly']
+            request.session['free_only'] = auth.get('free_only', True)
             return {"status": "login success"}
     else:
         request.session.clear()
@@ -69,7 +69,7 @@ async def login(password: str, request: Request):
 @app.post("/gen")
 async def gen(context: GenerateRequest, request: Request):
     signed = request.session.get('signed', False)
-    freeonly = request.session.get('freeonly', True)
+    freeonly = request.session.get('free_only', True)
     always_require_auth = server_config['always_require_auth']
     is_free_gen = free_check(context.width, context.height, context.steps)
     if ((not signed and (always_require_auth or not is_free_gen))
