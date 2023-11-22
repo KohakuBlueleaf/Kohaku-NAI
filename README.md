@@ -14,7 +14,11 @@ A simple Novel-AI client with more utilities built in it
 ## Usage
 
 ### Setup
-`python -m pip install -r ./requirements.txt`
+```
+git clone https://github.com/KohakuBlueleaf/Kohaku-NAI.git
+cd Kohaku-NAI
+python -m pip install -r ./requirements.txt
+```
 
 ### Client
 If you just want to use it as a standalone client.
