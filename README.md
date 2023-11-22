@@ -36,3 +36,14 @@ You can also use uvicorn to deploy it:
 ```
 uvicorn gen_server:app
 ```
+
+
+## Future Plan
+* Client
+    * Better Client (maybe implemented in Vue)
+* Utils
+    * Random Prompts
+    * Wildcard
+    * auto gen
+* API
+    * Fetch Account info (if possible?)
