@@ -4,10 +4,15 @@
     max_jobs = 5
     save_path = "./data"
     token = ""
+    always_require_auth = false
     
-    [gen_server.auth]
+    [[gen_server.auth]]
         password = "123456"
-        always_require_token = false
+        free_only = true
+    
+    [[gen_server.auth]]
+        password = "aerlhkvsdjfh"
+        free_only = false
 
 
 [client]

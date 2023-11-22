@@ -31,7 +31,7 @@ class GenerateRequest(BaseModel):
 
 
 server_config = toml.load("config.toml")["gen_server"]
-auth_config = server_config["auth"]
+auth_configs = server_config.get('auth', [])
 set_token(server_config['token'])
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=uuid4().hex)
@@ -56,20 +56,24 @@ def save_img(sub_folder: str, image: bytes, json: str):
 
 @app.post("/login")
 async def login(password: str, request: Request):
-    if password == auth_config['password']:
-        request.session['signed'] = True
-        return {"status": "login success"}
+    for auth in auth_configs:
+        if password == auth['password']:
+            request.session['signed'] = True
+            request.session['freeonly'] = auth['freeonly']
+            return {"status": "login success"}
     else:
+        request.session.clear()
         return {"status": "login failed"}
 
 
 @app.post("/gen")
 async def gen(context: GenerateRequest, request: Request):
     signed = request.session.get('signed', False)
-    if (not signed 
-        and (not free_check(context.width, context.height, context.steps) 
-             or auth_config['always_require_token'])
-        ):
+    freeonly = request.session.get('freeonly', True)
+    always_require_auth = server_config['always_require_auth']
+    is_free_gen = free_check(context.width, context.height, context.steps)
+    if ((not signed and (always_require_auth or not is_free_gen))
+        or (freeonly and not is_free_gen)):
         return Response({'status': 'Config not allowed'}, 500)
     
     if request.session.get('signed', False):
