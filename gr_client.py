@@ -70,7 +70,7 @@ async def generate(mode, end_point, token, prompt, quality_tags, neg_prompt, see
     if mode == 'remote':
         if pswd:=client_config['end_point_pswd']:
             await remote_login(end_point, pswd)
-        img = await remote_gen(
+        img, img_data = await remote_gen(
             end_point,
             prompt, quality_tags, neg_prompt, seed, scale, 
             width, height, steps, sampler, scheduler, 
@@ -89,11 +89,15 @@ async def generate(mode, end_point, token, prompt, quality_tags, neg_prompt, see
     else:
         return None
     
+    if img is None:
+        return None
+    
     if client_config['autosave']:
         save_path = client_config['save_path']
         os.makedirs(name=save_path, exist_ok=True)
-        img_hash = sha3_256(img.tobytes()).hexdigest()
-        img.save(os.path.join(save_path, f'{img_hash}.png'), quality=0)
+        img_hash = sha3_256(img_data).hexdigest()
+        with open(os.path.join(save_path, f'{img_hash}.png'), 'wb', encoding='utf-8') as f:
+            f.write(img_data)
     
     return [img]
 

@@ -73,7 +73,7 @@ async def remote_gen(
     if response.status_code == 200:
         mem_file = io.BytesIO(response.content)
         mem_file.seek(0)
-        return Image.open(mem_file)
+        return Image.open(mem_file), response.content
     else:
         return None
 
