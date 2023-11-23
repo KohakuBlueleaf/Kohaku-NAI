@@ -5,6 +5,7 @@ import toml
 import gradio as gr
 
 from utils import remote_gen, remote_login, set_token, generate_novelai_image, image_from_bytes
+from client_modules import extension
 
 
 client_config = toml.load("config.toml")['client']
@@ -67,6 +68,12 @@ def control_ui():
 
 
 async def generate(mode, end_point, token, prompt, quality_tags, neg_prompt, seed, scale, width, height, steps, sampler, scheduler, smea, dyn, dyn_threshold, cfg_rescale):
+    prompt = extension.process_prompt(prompt)
+    neg_prompt = extension.process_prompt(neg_prompt)
+    quality_tags = extension.process_prompt(quality_tags)
+    
+    print(prompt, quality_tags, neg_prompt)
+    
     if mode == 'remote':
         if pswd:=client_config['end_point_pswd']:
             await remote_login(end_point, pswd)
@@ -138,5 +145,6 @@ def ui():
 
 
 if __name__ == '__main__':
+    extension.load_extensions()
     website = ui()
     website.launch()
