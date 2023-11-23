@@ -5,11 +5,12 @@ import json
 
 from PIL import Image
 from httpx import AsyncClient
+from curl_cffi.requests import AsyncSession
 
 
 jwt_token = ''
 url = "https://api.novelai.net/ai/generate-image"
-global_client = AsyncClient(timeout=100)
+global_client = AsyncSession(timeout=100)
 
 
 def set_token(token):
@@ -17,7 +18,7 @@ def set_token(token):
     if jwt_token == token:
         return
     jwt_token = token
-    global_client = AsyncClient(
+    global_client = AsyncSession(
         timeout=100,
         headers = {
             "Authorization": f"Bearer {jwt_token}",
@@ -75,7 +76,7 @@ async def remote_gen(
         mem_file.seek(0)
         return Image.open(mem_file), response.content
     else:
-        return None
+        return None, response.content
 
 
 async def generate_novelai_image(
