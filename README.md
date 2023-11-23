@@ -52,10 +52,11 @@ uvicorn gen_server:app
 
 ## Future Plan
 * Client
-    [] Better Client (maybe static website implemented in Vue)
+    - [ ] Better Client (maybe static website implemented in Vue)
+    - [x] sd-webui extensions
 * Utils
-    [] Random Prompts
-    [x] Wildcard
-    [] auto gen
+    - [ ] Random Prompts
+    - [x] Wildcard [built-in extensions]
+    - [ ] auto gen
 * API
-    [] Fetch Account info (if possible?)
+    - [ ] Fetch Account info (if possible?)
