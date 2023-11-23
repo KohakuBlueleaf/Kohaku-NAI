@@ -1,5 +1,6 @@
 import asyncio
 import sys
+import random
 import gradio as gr
 
 from modules import shared
@@ -13,6 +14,10 @@ from utils import remote_gen, generate_novelai_image, set_token, remote_login, i
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 loop = asyncio.new_event_loop()
+
+
+async def run_tasks(tasks):
+    return await asyncio.gather(*tasks)
 
 
 class KohakuNAIScript(scripts.Script):
@@ -69,6 +74,8 @@ class KohakuNAIScript(scripts.Script):
         return p
 
     def run(self, p, _, sampler, scheduler, smea, dyn, dyn_threshold, cfg_rescale):
+        if p.seed == -1:
+            p.seed = random.randint(0, 2**32-1)
         if shared.opts.knai_api_call == 'Remote':
             login_status = loop.run_until_complete((
                 remote_login(
@@ -76,13 +83,13 @@ class KohakuNAIScript(scripts.Script):
                     shared.opts.knai_remote_server_pswd.strip()
                 )
             ))
-            img, img_data = loop.run_until_complete((
+            datas = loop.run_until_complete(run_tasks([
                 remote_gen(
                     shared.opts.knai_remote_server,
                     p.prompt,
                     "",
                     p.negative_prompt,
-                    p.seed,
+                    p.seed + i,
                     p.cfg_scale,
                     p.width,
                     p.height,
@@ -93,15 +100,17 @@ class KohakuNAIScript(scripts.Script):
                     dyn,
                     dyn_threshold,
                     cfg_rescale
-                )
-            ))
+                ) for i in range(p.batch_size*p.n_iter)
+            ]))
+            imgs = [img for img, _ in datas]
+            img_datas = [img_data for _, img_data in datas]
         else:
             set_token(shared.opts.knai_token)
-            img_data, _ = loop.run_until_complete((
+            datas = loop.run_until_complete(run_tasks([
                 generate_novelai_image(
                     p.prompt,
                     p.negative_prompt,
-                    p.seed,
+                    p.seed + i,
                     p.cfg_scale,
                     p.width,
                     p.height,
@@ -112,15 +121,14 @@ class KohakuNAIScript(scripts.Script):
                     dyn,
                     dyn_threshold,
                     cfg_rescale
-                )
-            ))
-            if not isinstance(img_data, bytes):
-                img = None
-            else:
-                img = image_from_bytes(img_data)
-        if img is None:
-            raise Exception("Failed to generate image: " + str(img_data))
-        exif, items = images.read_info_from_image(img)
+                ) for i in range(p.batch_size*p.n_iter)
+            ]))
+            img_datas = [img_data for img_data, _ in datas]
+            imgs = [image_from_bytes(img_data) if isinstance(img_data, bytes) else None for img_data in img_datas]
+        if any(img is None for img in imgs):
+            failed_img_data = next(img_data for img_data in img_datas if not isinstance(img_data[1], bytes))
+            raise Exception("Failed to generate image: " + str(failed_img_data))
+        nai_infos = [images.read_info_from_image(img) for img in imgs]
         extra_infos = {
             'Script': self.title(),
             'Sampler': sampler != 'k_euler' and sampler,
@@ -131,14 +139,20 @@ class KohakuNAIScript(scripts.Script):
             'CFG rescale': cfg_rescale
         }
         extra_info_text = ", ".join([f"{k}: {v}" for k, v in extra_infos.items() if v])
+        img_grid = images.image_grid(imgs, p.batch_size)
+        
+        infotexts = [f'{exif}, {extra_info_text}' for exif, _ in nai_infos]
         res = Processed(
-            p, [img], seed=p.seed, info=f'{exif}, {extra_info_text}'
+            p, [img_grid] + imgs, 
+            seed=[p.seed] + [p.seed + i for i in range(p.batch_size*p.n_iter)], 
+            infotexts=infotexts[:1] + infotexts
         )
-        images.save_image(
-            img, p.outpath_samples, "", p.seed, p.prompt, 
-            shared.opts.samples_format,
-            info = f'{exif}, {extra_info_text}', p = p
-        )
+        for img, (exif, items) in zip(imgs, nai_infos):
+            images.save_image(
+                img, p.outpath_samples, "", p.seed, p.prompt, 
+                shared.opts.samples_format,
+                info = f'{exif}, {extra_info_text}', p = p
+            )
         return res
 
 
