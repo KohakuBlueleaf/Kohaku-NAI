@@ -3,15 +3,25 @@ A simple Novel-AI client with more utilities built in it
 
 **Sharing your account to your friends may violate the NAI's TOS. USE AT YOUR OWN RISK!!!**
 
-![image](https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/8d679565-a578-4c50-8e97-fcedf77f4271)
-
+|![image](https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/8d679565-a578-4c50-8e97-fcedf77f4271)||
+| --- | ---|
 ## Features
 * Generation Server for managing manual rate limit and saving the images automatically.
 * Standalone Client which can connect to NAI directly or connect to the generation server.
 
 ## Usage
 
-### Setup
+### sd-webui
+You can treat this repo as a [a1111 sd-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) extensions.
+Just put the repo url into `Extensions > Install from URL > URL for extension's git repository` and then click Install button.
+
+**Remember to restart the sd-webui process.**
+
+Once you restart your sd-webui, you can find a "Kohaku NAI Client" option under the "Script" dropdown in `Txt 2 Img` tab. And a `Kohaku-NAI` section in the `settings` tab.
+
+Put your token (or generation server's url) into settings, save them. And then choose "Kohaku NAI Client" option in the "Script" dropdown. Now you can generate images with NAI api within sd-webui.
+
+### Setup for standalone usage or gen-server
 ```
 git clone https://github.com/KohakuBlueleaf/Kohaku-NAI.git
 cd Kohaku-NAI
