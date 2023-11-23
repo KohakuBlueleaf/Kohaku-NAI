@@ -1,5 +1,7 @@
-# Kohaku-NAI[WIP]
-A simple Novel-AI client with more utilities built in it
+# Kohaku-NAI
+A simple Novel-AI client with some utilities built in it.
+
+Also a stable-diffusion-webui extension.
 
 **Sharing your account to your friends may violate the NAI's TOS. USE AT YOUR OWN RISK!!!**
 
@@ -28,7 +30,7 @@ cd Kohaku-NAI
 python -m pip install -r ./requirements.txt
 ```
 
-### Client
+### Standalone Client
 If you just want to use it as a standalone client.
 Just change the `mode` of the client section in the `config.toml` to `local` and put your NovelAI API token to `token`.
 
@@ -37,7 +39,7 @@ If you want to connect to others' generation servers, contact the server maintai
 
 And then use `python ./gr_client.py` to run it.
 
-### Server
+### Generation Server
 Put your NAI token into `token` in the server section in the `config.toml`.
 
 use `python ./gen_server.py` to run it.
@@ -50,10 +52,10 @@ uvicorn gen_server:app
 
 ## Future Plan
 * Client
-    * Better Client (maybe implemented in Vue)
+    [] Better Client (maybe static website implemented in Vue)
 * Utils
-    * Random Prompts
-    * Wildcard
-    * auto gen
+    [] Random Prompts
+    [x] Wildcard
+    [] auto gen
 * API
-    * Fetch Account info (if possible?)
+    [] Fetch Account info (if possible?)
