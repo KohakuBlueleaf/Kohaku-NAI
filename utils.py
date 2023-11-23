@@ -10,7 +10,7 @@ from curl_cffi.requests import AsyncSession
 
 jwt_token = ''
 url = "https://api.novelai.net/ai/generate-image"
-global_client = AsyncSession(timeout=100)
+global_client = AsyncSession(timeout=100, impersonate='chrome110')
 
 
 def set_token(token):
@@ -25,7 +25,8 @@ def set_token(token):
             "Content-Type": "application/json",
             "Origin": "https://novelai.net",
             "Referer": "https://novelai.net/"
-        }
+        }, 
+        impersonate='chrome110',
     )
 
 
