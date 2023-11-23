@@ -2,6 +2,7 @@
     host = "0.0.0.0"
     port = 7000
     max_jobs = 5
+    min_delay = 1.0
     save_path = "./data"
     token = ""
     always_require_auth = false

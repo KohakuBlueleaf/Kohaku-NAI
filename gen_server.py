@@ -1,6 +1,8 @@
 import asyncio
 import os
 import json
+import time
+import random
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
@@ -34,6 +36,8 @@ class GenerateRequest(BaseModel):
 server_config = toml.load("config.toml")["gen_server"]
 auth_configs = server_config.get('auth', [])
 set_token(server_config['token'])
+prev_gen_time = time.time()
+
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=uuid4().hex)
 
@@ -69,6 +73,8 @@ async def login(password: str, request: Request):
 
 @app.post("/gen")
 async def gen(context: GenerateRequest, request: Request):
+    global prev_gen_time
+    
     signed = request.session.get('signed', False)
     freeonly = request.session.get('free_only', True)
     always_require_auth = server_config['always_require_auth']
@@ -83,6 +89,10 @@ async def gen(context: GenerateRequest, request: Request):
         sub_folder = 'free'
     
     async with generate_semaphore:
+        if prev_gen_time + server_config['min_delay'] > time.time():
+            await asyncio.sleep(server_config['min_delay'] + random.random()*0.3)
+        prev_gen_time = time.time()
+        
         img_bytes, json_payload = await generate_novelai_image(
             context.prompt,
             context.neg_prompt,
