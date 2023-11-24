@@ -179,6 +179,13 @@ class KohakuNAIScript(scripts.Script):
         extra_info_text = ", ".join([f"{k}: {v}" for k, v in extra_infos.items() if v])
         infotexts = [f'{exif}, {extra_info_text}' for exif, _ in nai_infos]
         
+        for img, (exif, items) in zip(imgs, nai_infos):
+            images.save_image(
+                img, p.outpath_samples, "", p.seed, p.prompt, 
+                shared.opts.samples_format,
+                info = f'{exif}, {extra_info_text}', p = p
+            )
+        
         if len(imgs) > 1:
             img_grid = images.image_grid(imgs, p.batch_size)
             imgs = [img_grid] + imgs
@@ -192,12 +199,6 @@ class KohakuNAIScript(scripts.Script):
             seed = seeds, 
             infotexts=infotexts
         )
-        for img, (exif, items) in zip(imgs, nai_infos):
-            images.save_image(
-                img, p.outpath_samples, "", p.seed, p.prompt, 
-                shared.opts.samples_format,
-                info = f'{exif}, {extra_info_text}', p = p
-            )
         return res
 
 
