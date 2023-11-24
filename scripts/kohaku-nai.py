@@ -90,14 +90,14 @@ class KohakuNAIScript(scripts.Script):
         if p.scripts is not None:
             p.scripts.process(p)
         
-        p.parse_extra_network_prompts()
-        p.setup_conds()
-        p.init(None, None, None)
-        
         p.prompts = p.all_prompts
         p.negative_prompts = p.all_negative_prompts
         p.hr_prompts = p.all_hr_prompts
         p.hr_negative_prompts = p.all_hr_negative_prompts
+        
+        p.parse_extra_network_prompts()
+        p.setup_conds()
+        p.init(None, None, None)
         
         if shared.opts.knai_api_call == 'Remote':
             login_status = loop.run_until_complete((
