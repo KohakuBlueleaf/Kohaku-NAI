@@ -79,8 +79,11 @@ class KohakuNAIScript(scripts.Script):
         return p
 
     def run(self, p: StableDiffusionProcessingTxt2Img, _, sampler, scheduler, smea, dyn, dyn_threshold, cfg_rescale):
+        if p.scripts is not None:
+            p.scripts.before_process(p)
         if p.seed == -1:
             p.seed = random.randint(0, 2**32-1)
+        
         p.seeds = p.all_seeds = [p.seed + i for i in range(p.batch_size*p.n_iter)]
         p.setup_prompts()
         p.prompts = p.all_prompts
