@@ -87,6 +87,9 @@ class KohakuNAIScript(scripts.Script):
         p.negative_prompts = p.all_negative_prompts
         p.hr_prompts = p.all_hr_prompts
         p.hr_negative_prompts = p.all_hr_negative_prompts
+        
+        if p.scripts is not None:
+            p.scripts.process(p)
         p.parse_extra_network_prompts()
         p.setup_conds()
         p.init(None, None, None)
