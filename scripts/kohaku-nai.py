@@ -1,15 +1,20 @@
 import asyncio
 import sys
 import random
-import gradio as gr
 
-from modules import shared
-from modules import scripts
-from modules import script_callbacks
-from modules import images
-from modules.processing import Processed
+import gradio as gr
+import numpy as np
+from PIL import Image
+
+import torch
+from torchvision.transforms.functional import to_tensor
+
+from modules import shared, scripts, script_callbacks, images, devices
+from modules.sd_samplers_common import images_tensor_to_samples
+from modules.processing import Processed, StableDiffusionProcessingTxt2Img
 
 from utils import remote_gen, generate_novelai_image, set_token, remote_login, image_from_bytes
+
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -73,9 +78,19 @@ class KohakuNAIScript(scripts.Script):
         print(kwargs)
         return p
 
-    def run(self, p, _, sampler, scheduler, smea, dyn, dyn_threshold, cfg_rescale):
+    def run(self, p: StableDiffusionProcessingTxt2Img, _, sampler, scheduler, smea, dyn, dyn_threshold, cfg_rescale):
         if p.seed == -1:
             p.seed = random.randint(0, 2**32-1)
+        p.seeds = p.all_seeds = [p.seed + i for i in range(p.batch_size*p.n_iter)]
+        p.setup_prompts()
+        p.prompts = p.all_prompts
+        p.negative_prompts = p.all_negative_prompts
+        p.hr_prompts = p.all_hr_prompts
+        p.hr_negative_prompts = p.all_hr_negative_prompts
+        p.parse_extra_network_prompts()
+        p.setup_conds()
+        p.init(None, None, None)
+        
         if shared.opts.knai_api_call == 'Remote':
             login_status = loop.run_until_complete((
                 remote_login(
@@ -89,7 +104,7 @@ class KohakuNAIScript(scripts.Script):
                     p.prompt,
                     "",
                     p.negative_prompt,
-                    p.seed + i,
+                    seed,
                     p.cfg_scale,
                     p.width,
                     p.height,
@@ -100,7 +115,7 @@ class KohakuNAIScript(scripts.Script):
                     dyn,
                     dyn_threshold,
                     cfg_rescale
-                ) for i in range(p.batch_size*p.n_iter)
+                ) for seed in p.seeds
             ]))
             imgs = [img for img, _ in datas]
             img_datas = [img_data for _, img_data in datas]
@@ -110,7 +125,7 @@ class KohakuNAIScript(scripts.Script):
                 generate_novelai_image(
                     p.prompt,
                     p.negative_prompt,
-                    p.seed + i,
+                    seed,
                     p.cfg_scale,
                     p.width,
                     p.height,
@@ -121,7 +136,7 @@ class KohakuNAIScript(scripts.Script):
                     dyn,
                     dyn_threshold,
                     cfg_rescale
-                ) for i in range(p.batch_size*p.n_iter)
+                ) for seed in p.seeds
             ]))
             img_datas = [img_data for img_data, _ in datas]
             imgs = [image_from_bytes(img_data) if isinstance(img_data, bytes) else None for img_data in img_datas]
@@ -129,6 +144,28 @@ class KohakuNAIScript(scripts.Script):
             failed_img_data = next(img_data for img_data in img_datas if not isinstance(img_data[1], bytes))
             raise Exception("Failed to generate image: " + str(failed_img_data))
         nai_infos = [images.read_info_from_image(img) for img in imgs]
+        
+        if p.enable_hr:
+            imgs_tensor = torch.stack([to_tensor(img.convert('RGB')) for img in imgs]) * 2 - 1
+            imgs_latent = images_tensor_to_samples(imgs_tensor)
+            
+            with torch.no_grad(), p.sd_model.ema_scope(), (devices.without_autocast() if devices.unet_needs_upcast else devices.autocast()):
+                img_tensor_list = p.sample_hr_pass(
+                    imgs_latent,
+                    imgs_tensor,
+                    p.seeds,
+                    None,
+                    None,
+                    [p.prompt] * (p.batch_size * p.n_iter)
+                )
+                x_samples_ddim = torch.stack(img_tensor_list).float()
+                x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
+                imgs = []
+                for i, x_sample in enumerate(x_samples_ddim):
+                    x_sample = 255. * np.moveaxis(x_sample.cpu().numpy(), 0, 2)
+                    x_sample = x_sample.astype(np.uint8)
+                    imgs.append(Image.fromarray(x_sample))
+        
         extra_infos = {
             'Script': self.title(),
             'Sampler': sampler != 'k_euler' and sampler,
@@ -136,16 +173,24 @@ class KohakuNAIScript(scripts.Script):
             'SMEA': smea,
             'Dynamic': dyn,
             'Dynamic Thresholding': dyn_threshold,
-            'CFG rescale': cfg_rescale
+            'CFG rescale': cfg_rescale,
+            **p.extra_generation_params
         }
         extra_info_text = ", ".join([f"{k}: {v}" for k, v in extra_infos.items() if v])
-        img_grid = images.image_grid(imgs, p.batch_size)
-        
         infotexts = [f'{exif}, {extra_info_text}' for exif, _ in nai_infos]
+        
+        if len(imgs) > 1:
+            img_grid = images.image_grid(imgs, p.batch_size)
+            imgs = [img_grid] + imgs
+            infotexts = infotexts[:1] + infotexts
+            seeds = [p.seed] + p.seeds
+        else:
+            seeds = p.seeds
+        
         res = Processed(
-            p, [img_grid] + imgs, 
-            seed=[p.seed] + [p.seed + i for i in range(p.batch_size*p.n_iter)], 
-            infotexts=infotexts[:1] + infotexts
+            p, imgs, 
+            seed = seeds, 
+            infotexts=infotexts
         )
         for img, (exif, items) in zip(imgs, nai_infos):
             images.save_image(
