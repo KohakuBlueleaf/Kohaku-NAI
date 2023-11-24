@@ -86,16 +86,18 @@ class KohakuNAIScript(scripts.Script):
         
         p.seeds = p.all_seeds = [p.seed + i for i in range(p.batch_size*p.n_iter)]
         p.setup_prompts()
+        
+        if p.scripts is not None:
+            p.scripts.process(p)
+        
+        p.parse_extra_network_prompts()
+        p.setup_conds()
+        p.init(None, None, None)
+        
         p.prompts = p.all_prompts
         p.negative_prompts = p.all_negative_prompts
         p.hr_prompts = p.all_hr_prompts
         p.hr_negative_prompts = p.all_hr_negative_prompts
-        
-        if p.scripts is not None:
-            p.scripts.process(p)
-        p.parse_extra_network_prompts()
-        p.setup_conds()
-        p.init(None, None, None)
         
         if shared.opts.knai_api_call == 'Remote':
             login_status = loop.run_until_complete((
@@ -162,7 +164,7 @@ class KohakuNAIScript(scripts.Script):
                     p.seeds,
                     None,
                     None,
-                    [p.prompt] * (p.batch_size * p.n_iter)
+                    p.prompts
                 )
                 x_samples_ddim = torch.stack(img_tensor_list).float()
                 x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
