@@ -107,10 +107,10 @@ class KohakuNAIScript(scripts.Script):
             datas = loop.run_until_complete(run_tasks([
                 remote_gen(
                     shared.opts.knai_remote_server,
-                    p.prompt,
+                    p.prompts[i],
                     "",
-                    p.negative_prompt,
-                    seed,
+                    p.negative_prompts[i],
+                    p.seeds[i],
                     p.cfg_scale,
                     p.width,
                     p.height,
@@ -121,7 +121,7 @@ class KohakuNAIScript(scripts.Script):
                     dyn,
                     dyn_threshold,
                     cfg_rescale
-                ) for seed in p.seeds
+                ) for i in range(p.batch_size)
             ]))
             imgs = [img for img, _ in datas]
             img_datas = [img_data for _, img_data in datas]
@@ -129,9 +129,9 @@ class KohakuNAIScript(scripts.Script):
             set_token(shared.opts.knai_token)
             datas = loop.run_until_complete(run_tasks([
                 generate_novelai_image(
-                    p.prompt,
-                    p.negative_prompt,
-                    seed,
+                    p.prompts[i],
+                    p.negative_prompts[i],
+                    p.seeds[i],
                     p.cfg_scale,
                     p.width,
                     p.height,
@@ -142,7 +142,7 @@ class KohakuNAIScript(scripts.Script):
                     dyn,
                     dyn_threshold,
                     cfg_rescale
-                ) for seed in p.seeds
+                ) for i in range(p.batch_size)
             ]))
             img_datas = [img_data for img_data, _ in datas]
             imgs = [image_from_bytes(img_data) if isinstance(img_data, bytes) else None for img_data in img_datas]
