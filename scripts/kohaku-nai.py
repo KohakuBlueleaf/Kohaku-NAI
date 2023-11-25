@@ -154,8 +154,8 @@ class KohakuNAIScript(scripts.Script):
         nai_infos = [images.read_info_from_image(img) for img in imgs]
         
         if p.enable_hr:
-            imgs_tensor = torch.stack([to_tensor(img.convert('RGB')) for img in imgs]) * 2 - 1
             imgs_latent = images_tensor_to_samples(imgs_tensor)
+            imgs_tensor = torch.stack([to_tensor(img.convert('RGB')) for img in imgs]) * 2 - 1
             
             with torch.no_grad(), p.sd_model.ema_scope(), (devices.without_autocast() if devices.unet_needs_upcast else devices.autocast()):
                 img_tensor_list = p.sample_hr_pass(
