@@ -51,10 +51,10 @@ generate_semaphore = asyncio.Semaphore(server_config['max_jobs'])
 save_worker = ThreadPoolExecutor(16)
 
 
-def save_img(sub_folder: str, image: bytes, json: str):
-    sub_folder_path = os.path.join(
-        server_config['save_path'], sub_folder
-    )
+def save_img(save_path: str, sub_folder: str, image: bytes, json: str):
+    if not save_path:
+        save_path = server_config['save_path']
+    sub_folder_path = os.path.join(save_path, sub_folder)
     os.makedirs(sub_folder_path, exist_ok=True)
     os.makedirs(f'{sub_folder_path}/metadatas', exist_ok=True)
     
@@ -73,6 +73,8 @@ async def login(password: str, request: Request):
         if password == auth['password']:
             request.session['signed'] = True
             request.session['free_only'] = auth.get('free_only', True)
+            request.session['save_path'] = auth.get('save_path', server_config['save_path'])
+            request.session['custom_sub_folder'] = auth.get('custom_sub_folder', False)
             return {"status": "login success"}
     else:
         request.session.clear()
@@ -92,7 +94,11 @@ async def gen(context: GenerateRequest, request: Request):
     always_require_auth = server_config['always_require_auth']
     is_free_gen = free_check(context.width, context.height, context.steps)
     
-    sub_folder = context.img_sub_folder or extra_infos.get('save_folder', '')
+    save_path = request.session.get('save_path', server_config['save_path'])
+    if request.session['custom_sub_folder']:
+        sub_folder = context.img_sub_folder or extra_infos.get('save_folder', '')
+    else:
+        sub_folder = ''
     safe_folder_name = re.sub(r'[^\w\-_\. ]', '_', sub_folder)
     
     if ((not signed and (always_require_auth or not is_free_gen))
@@ -121,7 +127,7 @@ async def gen(context: GenerateRequest, request: Request):
         )
     
     await asyncio.get_running_loop().run_in_executor(
-        save_worker, save_img, safe_folder_name, img_bytes, json_payload
+        save_worker, save_img, save_path, safe_folder_name, img_bytes, json_payload
     )
     
     return Response(img_bytes, media_type="image/png")

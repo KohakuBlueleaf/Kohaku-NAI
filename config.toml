@@ -9,7 +9,9 @@
     
     [[gen_server.auth]]
         password = "123456"
+        save_path = "./free"
         free_only = true
+        custom_sub_folder = false
     
     [[gen_server.auth]]
         password = "aerlhkvsdjfh"
