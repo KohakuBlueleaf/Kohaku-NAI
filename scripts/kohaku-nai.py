@@ -16,7 +16,7 @@ from modules.processing import Processed, StableDiffusionProcessingTxt2Img
 from utils import remote_gen, generate_novelai_image, set_token, remote_login, image_from_bytes
 
 
-if 'win' in sys.platform:
+if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 loop = asyncio.new_event_loop()
 
