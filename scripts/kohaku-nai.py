@@ -16,7 +16,7 @@ from modules.processing import Processed, StableDiffusionProcessingTxt2Img
 from utils import remote_gen, generate_novelai_image, set_token, remote_login, image_from_bytes
 
 
-if sys.platform == 'win32':
+if 'win' in sys.platform:
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 loop = asyncio.new_event_loop()
 
@@ -122,7 +122,8 @@ class KohakuNAIScript(scripts.Script):
                     smea,
                     dyn,
                     dyn_threshold,
-                    cfg_rescale
+                    cfg_rescale,
+                    shared.opts.knai_remote_server_ex_infos,
                 ) for i in range(p.batch_size)
             ]))
             imgs = [img for img, _ in datas]
@@ -235,6 +236,12 @@ def on_ui_settings():
         shared.OptionInfo(
             "", "Remote server PASSWORD", section=section
         )
+    )
+    shared.opts.add_option(
+        "knai_remote_server_ex_infos",
+        shared.OptionInfo(
+            "{}", "Extra info for remote", gr.Code, {"language": "json"}, section=section
+        ).info("The extra infos in JSON which will be sent to remote server when generating")
     )
 
 

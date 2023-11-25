@@ -4,3 +4,4 @@ numpy
 gradio
 toml
 curl_cffi
+snowflake-id

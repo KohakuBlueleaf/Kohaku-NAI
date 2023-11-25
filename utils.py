@@ -55,6 +55,7 @@ async def remote_gen(
     dyn=False,
     dyn_threshold=False,
     chg_rescale=0,
+    extra_infos = '',
 ):
     payload = {
         "prompt": f'{input_text}, {quality_tags}',
@@ -70,6 +71,7 @@ async def remote_gen(
         "dyn": dyn,
         "dyn_threshold": dyn_threshold,
         "chg_rescale": chg_rescale,
+        "extra_infos": extra_infos
     }
     response = await global_client.post(f'{end_point}/gen', json=payload)
     if response.status_code == 200:
