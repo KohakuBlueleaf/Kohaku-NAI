@@ -39,11 +39,41 @@ async def remote_login(end_point, password):
         return None
 
 
+QUALITY_TAGS = "best quality, amazing quality, very aesthetic, absurdres"
+UCPRESET = {
+    "heavy": (
+        "lowres, {bad}, error, fewer, extra, missing, worst quality, jpeg artifacts, "
+        "bad quality, watermark, unfinished, displeasing, chromatic aberration, signature, extra digits, "
+        "artistic error, username, scan, [abstract]"
+    ),
+    "light": "lowres, jpeg artifacts, worst quality, watermark, blurry, very displeasing",
+    "None": "lowres"
+}
+DEFAULT_ARGS = {
+    "prompt": "",
+    "negative_prompt": "",
+    "quality_tags": False,
+    "ucpreset": "",
+    "seed": -1, 
+    "scale": 5.0, 
+    "width": 1024, 
+    "height": 1024, 
+    "steps": 28, 
+    "sampler": "k_euler",
+    "schedule": 'native',
+    "smea": False,
+    "dyn": False,
+    "dyn_threshold": False,
+    "cfg_rescale": 0,
+}
+
+
 async def remote_gen(
     end_point="http://127.0.0.1:7000",
-    input_text="",
-    quality_tags="",
-    negative_prompt="", 
+    prompt="",
+    quality_tags=False,
+    negative_prompt="",
+    ucpreset="",
     seed=-1, 
     scale=5.0, 
     width=1024, 
@@ -54,12 +84,12 @@ async def remote_gen(
     smea=False,
     dyn=False,
     dyn_threshold=False,
-    chg_rescale=0,
+    cfg_rescale=0,
     extra_infos = '',
 ):
     payload = {
-        "prompt": f'{input_text}, {quality_tags}',
-        "neg_prompt": negative_prompt,
+        "prompt": f'{prompt}, {QUALITY_TAGS}' if quality_tags else prompt,
+        "neg_prompt": f'{UCPRESET[ucpreset]}, {negative_prompt}' if ucpreset in UCPRESET else negative_prompt,
         "seed": seed,
         "scale": scale,
         "width": width,
@@ -70,8 +100,12 @@ async def remote_gen(
         "smea": smea,
         "dyn": dyn,
         "dyn_threshold": dyn_threshold,
-        "chg_rescale": chg_rescale,
-        "extra_infos": extra_infos
+        "cfg_rescale": cfg_rescale,
+        "extra_infos": (
+            extra_infos 
+            if isinstance(extra_infos, str) 
+            else json.dumps(extra_infos, ensure_ascii=False)
+        ),
     }
     response = await global_client.post(f'{end_point}/gen', json=payload)
     if response.status_code == 200:
@@ -79,12 +113,18 @@ async def remote_gen(
         mem_file.seek(0)
         return Image.open(mem_file), response.content
     else:
-        return None, response.content
+        try:
+            data = response.json()
+        except:
+            data = response.content
+        return None, data
 
 
 async def generate_novelai_image(
-    input_text="", 
-    negative_prompt="", 
+    prompt="", 
+    quality_tags=False,
+    negative_prompt="",
+    ucpreset="",
     seed=-1, 
     scale=5.0, 
     width=1024, 
@@ -104,7 +144,7 @@ async def generate_novelai_image(
     # Define the payload
     payload = {
         "action": "generate",
-        "input": input_text,
+        "input": f'{prompt}, {QUALITY_TAGS}' if quality_tags else prompt,
         "model": "nai-diffusion-3",
         "parameters": {
             "width": width,
@@ -119,7 +159,7 @@ async def generate_novelai_image(
             "controlnet_strength": 1,
             "dynamic_thresholding": dyn_threshold,
             "legacy": False,
-            "negative_prompt": negative_prompt,
+            "negative_prompt": f'{UCPRESET[ucpreset]}, {negative_prompt}' if ucpreset in UCPRESET else negative_prompt,
             "noise_schedule": schedule,
             "qualityToggle": True,
             "seed": seed,

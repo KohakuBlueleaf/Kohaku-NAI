@@ -79,14 +79,14 @@ async def generate(mode, end_point, token, prompt, quality_tags, neg_prompt, see
             await remote_login(end_point, pswd)
         img, img_data = await remote_gen(
             end_point,
-            prompt, quality_tags, neg_prompt, seed, scale, 
+            prompt, quality_tags, neg_prompt, "", seed, scale, 
             width, height, steps, sampler, scheduler, 
             smea, dyn, dyn_threshold, cfg_rescale
         )
     elif mode == 'local':
         set_token(token)
         img_data, _ = await generate_novelai_image(
-            f"{prompt}, {quality_tags}", neg_prompt, seed, scale, 
+            prompt, quality_tags, neg_prompt, "", neg_prompt, seed, scale, 
             width, height, steps, sampler, scheduler, 
             smea, dyn, dyn_threshold, cfg_rescale
         )

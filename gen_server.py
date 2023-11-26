@@ -34,7 +34,7 @@ class GenerateRequest(BaseModel):
     smea: bool = False
     dyn: bool = False
     dyn_threshold: bool = False
-    chg_rescale: float = 0.0
+    cfg_rescale: float = 0.0
     img_sub_folder: str = ''
     extra_infos: str = ''
 
@@ -112,7 +112,9 @@ async def gen(context: GenerateRequest, request: Request):
         
         img_bytes, json_payload = await generate_novelai_image(
             context.prompt,
+            False,
             context.neg_prompt,
+            "",
             context.seed,
             context.scale,
             context.width,
@@ -123,7 +125,7 @@ async def gen(context: GenerateRequest, request: Request):
             context.smea,
             context.dyn,
             context.dyn_threshold,
-            context.chg_rescale,
+            context.cfg_rescale,
         )
     
     await asyncio.get_running_loop().run_in_executor(

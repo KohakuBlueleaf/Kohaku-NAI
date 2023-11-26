@@ -110,8 +110,9 @@ class KohakuNAIScript(scripts.Script):
                 remote_gen(
                     shared.opts.knai_remote_server,
                     p.prompts[i],
-                    "",
+                    False,
                     p.negative_prompts[i],
+                    "",
                     p.seeds[i],
                     p.cfg_scale,
                     p.width,
@@ -133,7 +134,9 @@ class KohakuNAIScript(scripts.Script):
             datas = loop.run_until_complete(run_tasks([
                 generate_novelai_image(
                     p.prompts[i],
+                    False,
                     p.negative_prompts[i],
+                    "",
                     p.seeds[i],
                     p.cfg_scale,
                     p.width,
