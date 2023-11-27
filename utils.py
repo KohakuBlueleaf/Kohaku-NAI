@@ -42,12 +42,12 @@ async def remote_login(end_point, password):
 
 QUALITY_TAGS = "best quality, amazing quality, very aesthetic, absurdres"
 UCPRESET = {
-    "heavy": (
+    "Heavy": (
         "lowres, {bad}, error, fewer, extra, missing, worst quality, jpeg artifacts, "
         "bad quality, watermark, unfinished, displeasing, chromatic aberration, signature, extra digits, "
         "artistic error, username, scan, [abstract]"
     ),
-    "light": "lowres, jpeg artifacts, worst quality, watermark, blurry, very displeasing",
+    "Light": "lowres, jpeg artifacts, worst quality, watermark, blurry, very displeasing",
     "None": "lowres"
 }
 DEFAULT_ARGS = {
