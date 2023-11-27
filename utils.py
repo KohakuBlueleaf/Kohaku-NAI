@@ -10,15 +10,16 @@ from curl_cffi.requests import AsyncSession
 
 jwt_token = ''
 url = "https://api.novelai.net/ai/generate-image"
-global_client = AsyncSession(timeout=3600, impersonate='chrome110')
+global_session = AsyncSession(timeout=3600, impersonate='chrome110')
+global_client = AsyncClient(timeout=3600)
 
 
 def set_token(token):
-    global jwt_token, global_client
+    global jwt_token, global_session
     if jwt_token == token:
         return
     jwt_token = token
-    global_client = AsyncSession(
+    global_session = AsyncSession(
         timeout=3600,
         headers = {
             "Authorization": f"Bearer {jwt_token}",
@@ -170,7 +171,7 @@ async def generate_novelai_image(
     }
 
     # Send the POST request
-    response = await global_client.post(url, json=payload)
+    response = await global_session.post(url, json=payload)
 
     # Process the response
     if response.headers.get('Content-Type') == 'application/x-zip-compressed':

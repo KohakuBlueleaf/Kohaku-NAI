@@ -2,7 +2,7 @@ import launch
 
 
 additional_requirements = [
-    "toml", "curl_cffi"
+    "toml", "curl_cffi", "httpx"
 ]
 
 
