@@ -128,6 +128,15 @@ async def gen(context: GenerateRequest, request: Request):
             context.cfg_rescale,
         )
     
+    if not isinstance(img_bytes, bytes):
+        error_mes = img_bytes
+        response = json_payload
+        try:
+            error_response = response.json()
+        except:
+            error_response = response.text
+        return Response(json.dumps({'error-mes': error_mes, 'status': error_response}), 500)
+    
     await asyncio.get_running_loop().run_in_executor(
         save_worker, save_img, save_path, safe_folder_name, img_bytes, json_payload
     )
