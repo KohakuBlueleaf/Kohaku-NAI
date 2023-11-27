@@ -78,7 +78,7 @@ async def login(password: str, request: Request):
             return {"status": "login success"}
     else:
         request.session.clear()
-        return {"status": "login failed"}
+        return Response(json.dumps({'status': 'login failed'}), 403)
 
 
 @app.post("/gen")
@@ -95,7 +95,7 @@ async def gen(context: GenerateRequest, request: Request):
     is_free_gen = free_check(context.width, context.height, context.steps)
     
     save_path = request.session.get('save_path', server_config['save_path'])
-    if request.session['custom_sub_folder']:
+    if request.session.get('custom_sub_folder', False):
         sub_folder = context.img_sub_folder or extra_infos.get('save_folder', '')
     else:
         sub_folder = ''
