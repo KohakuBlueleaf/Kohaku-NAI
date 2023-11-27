@@ -2,7 +2,7 @@ CAPITAL_ARGS_MAPPING = {
     'H': 'height',
     'W': 'width',
     'P': 'prompt',
-    'N': 'neg_prompt',
+    'N': 'negative_prompt',
     'S': 'seed',
     'UC': 'ucpreset',
     'QU': 'quality_tags',
