@@ -1,18 +1,35 @@
-def make_summary(generate_config, prefix):
-    summary = f'{prefix}novelai '
-    summary += (
-        f'"{generate_config["prompt"]}" '
-        f'"{generate_config["negative_prompt"]}" '
-        f'{("-QU " if generate_config["quality_tags"] else "")}'
-        f'-UC {generate_config["ucpreset"]} '
-        f'-W {generate_config["width"]} '
-        f'-H {generate_config["height"]} '
-        f'--steps {generate_config["steps"]} '
-        f'--scale {generate_config["scale"]} '
-        f'-S {generate_config["seed"]} '
-        f'--sampler {generate_config["sampler"]} '
-        f'--schedule {generate_config["schedule"]} '
-    )
+CAPITAL_ARGS_MAPPING = {
+    'H': 'height',
+    'W': 'width',
+    'P': 'prompt',
+    'N': 'neg_prompt',
+    'S': 'seed',
+    'UC': 'ucpreset',
+    'QU': 'quality_tags',
+}
+ARGS_CAPITAL_MAPPING = {v: k for k, v in CAPITAL_ARGS_MAPPING.items()}
+
+
+def make_summary(generate_config, prefix, default = None):
+    config = dict(generate_config.items())
+    if default is None:
+        default = {}
+    
+    summary = f'{prefix}novelai "{config.pop("prompt", "")}" '
+    if config["negative_prompt"]:
+        summary += f'"{config.pop("negative_prompt", "")}" '
+    if config.pop("quality_tags", False):
+        summary += '-QU '
+    
+    for k, v in config.items():
+        if k in default and v == default[k]:
+            continue
+        if k in ARGS_CAPITAL_MAPPING:
+            k = ARGS_CAPITAL_MAPPING[k]
+            summary += f'-{k}'
+        else:
+            summary += f'--{k}'
+        summary += f' {v} '
     return f'```\n{summary}\n```'
 
 

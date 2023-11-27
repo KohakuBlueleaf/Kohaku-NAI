@@ -1,4 +1,3 @@
-import random
 import shlex
 import io
 from traceback import format_exc
@@ -8,22 +7,9 @@ import discord.ext.commands as dc_commands
 from discord import app_commands
 from discord.ext.commands import CommandNotFound, Context
 
-from PIL import Image
-
 from .functions import *
 from .dc_views import NAIImageGen
 from utils import remote_login, remote_gen, DEFAULT_ARGS
-
-
-CAPITAL_ARGS_MAPPING = {
-    'H': 'height',
-    'W': 'width',
-    'P': 'prompt',
-    'N': 'neg_prompt',
-    'S': 'seed',
-    'UC': 'ucpreset',
-    'QU': 'quality_tags',
-}
 
 
 def event_with_error(func):
@@ -68,12 +54,12 @@ class KohakuNai(dc_commands.Cog):
         print('Logged in as')
         print(self.bot.user.name)
         print(self.bot.user.id)
+        print(self.prefix)
         await self.bot.change_presence(status=discord.Status.online, activity=discord.Game("Novel AI UwU"))
         print('------')
 
-    @dc_commands.Cog.listener()
-    @event_with_error
-    async def on_command_error(self, ctx, error):
+    @dc_commands.Cog.listener(name="on_error")
+    async def on_error(self, ctx, error):
         if isinstance(error, CommandNotFound):
             return
         try:
@@ -100,13 +86,26 @@ class KohakuNai(dc_commands.Cog):
                 default_args[k] = kwargs[k]
             elif args:
                 default_args[k] = args.pop(0)
-        gen_command = make_summary(default_args, self.prefix)
-        gen_message = await ctx.reply(content=f"### Generating with command:\n{gen_command}", ephemeral=True)
-        await ctx.message.delete()
+        
+        try:
+            width = int(default_args['width'])
+            height = int(default_args['height'])
+            steps = int(default_args['steps'])
+            scale = float(default_args['scale'])
+        except:
+            await ctx.reply("Your input is invalid")
+            return
+        
+        if width%64 or height%64 or width*height > 1024*1024 or steps>28 or scale<0:
+            await ctx.reply("Your input is invalid")
+            return
+        
+        gen_command = make_summary(default_args, self.prefix, DEFAULT_ARGS)
+        gen_message = await ctx.reply(content=f"### Generating with command:\n{gen_command}")
         async with ctx.typing():
-            await remote_login('http://127.0.0.1', '12345')
+            await remote_login('http://127.0.0.1:7000', '123456')
             img, info = await remote_gen(
-                'http://127.0.0.1',
+                'http://127.0.0.1:7000',
                 extra_infos={'save_folder': 'discord-bot'},
                 **default_args
             )
@@ -117,18 +116,19 @@ class KohakuNai(dc_commands.Cog):
                         error_embed.add_field(name=k, value=v)
                 else:
                     error_embed.add_field(name="info", value=str(info))
-                await gen_message.reply(embed=error_embed)
+                await gen_message.edit(
+                    content=f'{ctx.author.mention}\nGeneration failed:',
+                    embed=error_embed
+                )
             else:
-                await gen_message.reply(
-                    content=ctx.author.mention,
+                await gen_message.delete()
+                await ctx.reply(
+                    content=f'{ctx.author.mention}\nGeneration done:',
                     file=discord.File(
                         io.BytesIO(info),
                         filename=str(default_args) + ".png"
                     )
                 )
-            await gen_message.edit(
-                content = f'### Generation done:\n{gen_command}'
-            )
     
     @app_commands.command(name="nai", description='Use Novel AI to generate Images')
     async def nai(
@@ -142,39 +142,34 @@ class KohakuNai(dc_commands.Cog):
         cfg_scale: float = 5.0,
         seed: int = -1,
     ):
-        try:
-            if width%64 or height%64 or width*height > 1024*1024 or steps>28:
-                await interaction.response.send_message(
-                    "你的設定有問題喔UwU(超出免費額度/非法數值)"
-                )
-                return
-            if seed < 0:
-                seed = random.randint(0, 2**32 - 1)
-            embed = discord.Embed(title="生成設定", color=0x50A4ff)
-            embed.add_field(name='prompt', value=prompt, inline=False)
-            embed.add_field(name='negative_prompt', value=negative_prompt, inline=False)
-            embed.add_field(name='width', value=width, inline=False)
-            embed.add_field(name='height', value=height, inline=False)
-            embed.add_field(name='steps', value=steps, inline=False)
-            embed.add_field(name='CFG scale', value=cfg_scale, inline=False)
+        if width%64 or height%64 or width*height > 1024*1024 or steps>28 or cfg_scale<0:
             await interaction.response.send_message(
-                embed=embed,
-                view=NAIImageGen(
-                    prefix = self.prefix,
-                    origin = interaction,
-                    prompt=prompt,
-                    neg_prompt=negative_prompt,
-                    width=width,
-                    height=height,
-                    steps=steps,
-                    scale=cfg_scale,
-                    seed=seed
-                ), 
+                "Your input is invalid",
                 ephemeral=True
             )
-        except Exception:
-            err = format_exc()
-            log_error_command(err)
+            return
+        embed = discord.Embed(title="Generation settings", color=0x50A4ff)
+        embed.add_field(name='prompt', value=prompt, inline=False)
+        embed.add_field(name='negative_prompt', value=negative_prompt, inline=False)
+        embed.add_field(name='width', value=width, inline=False)
+        embed.add_field(name='height', value=height, inline=False)
+        embed.add_field(name='steps', value=steps, inline=False)
+        embed.add_field(name='CFG scale', value=cfg_scale, inline=False)
+        await interaction.response.send_message(
+            embed=embed,
+            view=NAIImageGen(
+                prefix = self.prefix,
+                origin = interaction,
+                prompt=prompt,
+                neg_prompt=negative_prompt,
+                width=width,
+                height=height,
+                steps=steps,
+                scale=cfg_scale,
+                seed=seed
+            ), 
+            ephemeral=True
+        )
 
 
 async def setup(bot: dc_commands.Bot):
