@@ -1,9 +1,7 @@
 import launch
 
 
-additional_requirements = [
-    "toml", "curl_cffi", "httpx"
-]
+additional_requirements = ["toml", "curl_cffi", "httpx"]
 
 
 for req in additional_requirements:

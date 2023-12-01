@@ -24,23 +24,30 @@ ar_map: dict[AspectRatio, tuple[int, int]] = {
 
 @click.command()
 @click.option("--prompt", "-p", default="1girl", help="Prompt to generate from")
-@click.option("--negative",
-              "-n",
-              default="bad quality",
-              help="Negative prompt to generate from")
+@click.option(
+    "--negative", "-n", default="bad quality", help="Negative prompt to generate from"
+)
 @click.option("--seed", "-s", default=-1, help="Seed to generate from")
 @click.option("--scale", "-S", default=5.0, help="Scale to generate from")
 @click.option("--width", "-w", help="Width to generate from")
 @click.option("--height", "-h", help="Height to generate from")
 @click.option("--steps", "-t", default=28, help="Steps")
-@click.option("--sampler",
-              "-m",
-              default="k_euler",
-              help="Sampler",
-              type=click.Choice([
-                  "k_euler", "k_euler_ancestral", "k_dpmpp_2s_ancestral",
-                  "k_dpmpp_2m", "k_dpmpp_sde", "ddim_v3"
-              ]))
+@click.option(
+    "--sampler",
+    "-m",
+    default="k_euler",
+    help="Sampler",
+    type=click.Choice(
+        [
+            "k_euler",
+            "k_euler_ancestral",
+            "k_dpmpp_2s_ancestral",
+            "k_dpmpp_2m",
+            "k_dpmpp_sde",
+            "ddim_v3",
+        ]
+    ),
+)
 @click.option("--schedule", default="native", help="Schedule")
 @click.option("--smea", is_flag=True, help="SMEA for sampler")
 @click.option("--dyn", is_flag=True, help="Dyn for sampler")
@@ -48,9 +55,9 @@ ar_map: dict[AspectRatio, tuple[int, int]] = {
 @click.option("--cfg-rescale", default=0, help="CFG rescale")
 @click.option("--sub-folder", default="", help="Sub folder to save to")
 @click.option("--ar", type=click.Choice(AspectRatio))
-@click.option("--host",
-              default="127.0.0.1:7000",
-              help="the host (gen server) to connect to")
+@click.option(
+    "--host", default="127.0.0.1:7000", help="the host (gen server) to connect to"
+)
 @click.option("--auth", help="the auth password to use")
 def main(
     prompt: str,
@@ -77,14 +84,12 @@ def main(
     h = height
     if ar is not None:
         if w is not None and h is not None:
-            logger.warning(
-                "Both width and height are specified, ignoring aspect ratio")
+            logger.warning("Both width and height are specified, ignoring aspect ratio")
         else:
             w, h = ar_map[ar]
             logger.info(f"Using aspect ratio {ar.name} ({w}x{h})")
     if w is None or h is None:
-        logger.warning(
-            "Width or height is not specified, using default 1024x1024")
+        logger.warning("Width or height is not specified, using default 1024x1024")
         w = 1024
         h = 1024
     smea_t = " smea" if smea else ""

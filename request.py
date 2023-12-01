@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class GenerateRequest(BaseModel):
     prompt: str
     neg_prompt: str

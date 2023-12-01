@@ -8,7 +8,18 @@ from utils import remote_login, remote_gen, DEFAULT_ARGS
 
 
 class NAIImageGen(discord.ui.View):
-    def __init__(self, prefix: str, origin: discord.Interaction, prompt, neg_prompt, width, height, steps, scale, seed):
+    def __init__(
+        self,
+        prefix: str,
+        origin: discord.Interaction,
+        prompt,
+        neg_prompt,
+        width,
+        height,
+        steps,
+        scale,
+        seed,
+    ):
         super().__init__()
         self.origin = origin
         self.prefix = prefix
@@ -28,30 +39,36 @@ class NAIImageGen(discord.ui.View):
 
     @discord.ui.select(
         placeholder="Quality Tags: Enable",
-        options = [
+        options=[
             discord.SelectOption(label=f"Enable", value=f"Enable"),
             discord.SelectOption(label=f"Disable", value=f"Disable"),
-        ])
-    async def quality_callback(self, interaction: discord.Interaction, select: discord.ui.Select):
+        ],
+    )
+    async def quality_callback(
+        self, interaction: discord.Interaction, select: discord.ui.Select
+    ):
         if select.values[0] == "Enable":
             self.generate_config["quality_tags"] = True
         else:
             self.generate_config["quality_tags"] = False
-        select.placeholder = f'Quality Tags: {select.values[0]}'
+        select.placeholder = f"Quality Tags: {select.values[0]}"
         await interaction.response.edit_message(view=self)
 
     @discord.ui.select(
         placeholder="UC preset: Heavy",
-        options = [
+        options=[
             discord.SelectOption(label=f"Heavy", value=f"Heavy"),
             discord.SelectOption(label=f"Light", value=f"Light"),
             discord.SelectOption(label=f"None", value=f"None"),
-        ])
-    async def uc_callback(self, interaction: discord.Interaction, select: discord.ui.Select):
+        ],
+    )
+    async def uc_callback(
+        self, interaction: discord.Interaction, select: discord.ui.Select
+    ):
         self.generate_config["ucpreset"] = select.values[0]
-        select.placeholder = f'UC preset: {select.values[0]}'
+        select.placeholder = f"UC preset: {select.values[0]}"
         await interaction.response.edit_message(view=self)
-    
+
     @discord.ui.select(
         placeholder="Sampler: Euler",
         options=[
@@ -61,12 +78,15 @@ class NAIImageGen(discord.ui.View):
             discord.SelectOption(label="DPM++ 2M", value="k_dpmpp_2m"),
             discord.SelectOption(label="DPM++ SDE", value="k_dpmpp_sde"),
             discord.SelectOption(label="DDIM V3", value="ddim_v3"),
-        ])
-    async def sampler_callback(self, interaction: discord.Interaction, select: discord.ui.Select):
+        ],
+    )
+    async def sampler_callback(
+        self, interaction: discord.Interaction, select: discord.ui.Select
+    ):
         self.generate_config["sampler"] = select.values[0]
-        select.placeholder = f'Sampler: {select.values[0]}'
+        select.placeholder = f"Sampler: {select.values[0]}"
         await interaction.response.edit_message(view=self)
-    
+
     @discord.ui.select(
         placeholder="Scheduler: Native",
         options=[
@@ -74,25 +94,36 @@ class NAIImageGen(discord.ui.View):
             discord.SelectOption(label="Karras", value="karras"),
             discord.SelectOption(label="Exponential", value="exponential"),
             discord.SelectOption(label="PolyExponential", value="polyexponential"),
-        ])
-    async def schedule_callback(self, interaction: discord.Interaction, select: discord.ui.Select):
+        ],
+    )
+    async def schedule_callback(
+        self, interaction: discord.Interaction, select: discord.ui.Select
+    ):
         self.generate_config["schedule"] = select.values[0]
-        select.placeholder = f'Scheduler: {select.values[0]}'
+        select.placeholder = f"Scheduler: {select.values[0]}"
         await interaction.response.edit_message(view=self)
-    
+
     @discord.ui.button(label="Generate", style=discord.ButtonStyle.green)
-    async def generate_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def generate_callback(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         gen_command = make_summary(self.generate_config, self.prefix, DEFAULT_ARGS)
-        await self.origin.edit_original_response(content=f"### Generating with command:\n{gen_command}", view=None, embed=None)
+        await self.origin.edit_original_response(
+            content=f"### Generating with command:\n{gen_command}",
+            view=None,
+            embed=None,
+        )
         await interaction.response.defer(thinking=True)
         await remote_login(config.GEN_SERVER_URL, config.GEN_SERVER_PSWD)
         img, info = await remote_gen(
             config.GEN_SERVER_URL,
-            extra_infos={'save_folder': 'discord-bot'},
-            **self.generate_config
+            extra_infos={"save_folder": "discord-bot"},
+            **self.generate_config,
         )
         if img is None:
-            error_embed = discord.Embed(title="Error", description="Failed to generate image")
+            error_embed = discord.Embed(
+                title="Error", description="Failed to generate image"
+            )
             if isinstance(info, dict):
                 for k, v in info.items():
                     error_embed.add_field(name=k, value=v)
@@ -103,10 +134,9 @@ class NAIImageGen(discord.ui.View):
             await interaction.followup.send(
                 content=interaction.user.mention,
                 file=discord.File(
-                    io.BytesIO(info),
-                    filename=str(self.generate_config) + ".png"
+                    io.BytesIO(info), filename=str(self.generate_config) + ".png"
                 ),
             )
         await self.origin.edit_original_response(
-            content = f'### Generation done:\n{gen_command}'
+            content=f"### Generation done:\n{gen_command}"
         )

@@ -17,30 +17,30 @@ if sys.platform == "win32":
 
 jwt_token = ""
 url = "https://api.novelai.net/ai/generate-image"
-global_session = AsyncSession(timeout=3600, impersonate='chrome110')
+global_session = AsyncSession(timeout=3600, impersonate="chrome110")
 global_client = AsyncClient(timeout=3600)
 
 
-def set_token(token:str):
+def set_token(token: str):
     global jwt_token, global_session
     if jwt_token == token:
         return
     jwt_token = token
     global_session = AsyncSession(
         timeout=3600,
-        headers = {
+        headers={
             "Authorization": f"Bearer {jwt_token}",
             "Content-Type": "application/json",
             "Origin": "https://novelai.net",
-            "Referer": "https://novelai.net/"
-        }, 
-        impersonate='chrome110',
+            "Referer": "https://novelai.net/",
+        },
+        impersonate="chrome110",
     )
 
 
 async def remote_login(end_point, password):
     payload = {"password": password}
-    response = await global_client.post(f'{end_point}/login', params=payload)
+    response = await global_client.post(f"{end_point}/login", params=payload)
     if response.status_code == 200:
         return response.json()["status"]
     else:
@@ -55,20 +55,20 @@ UCPRESET = {
         "artistic error, username, scan, [abstract]"
     ),
     "Light": "lowres, jpeg artifacts, worst quality, watermark, blurry, very displeasing",
-    "None": "lowres"
+    "None": "lowres",
 }
 DEFAULT_ARGS = {
     "prompt": "",
     "negative_prompt": "",
     "quality_tags": False,
     "ucpreset": "",
-    "seed": -1, 
-    "scale": 5.0, 
-    "width": 1024, 
-    "height": 1024, 
-    "steps": 28, 
+    "seed": -1,
+    "scale": 5.0,
+    "width": 1024,
+    "height": 1024,
+    "steps": 28,
     "sampler": "k_euler",
-    "schedule": 'native',
+    "schedule": "native",
     "smea": False,
     "dyn": False,
     "dyn_threshold": False,
@@ -82,22 +82,26 @@ async def remote_gen(
     quality_tags=False,
     negative_prompt="",
     ucpreset="",
-    seed=-1, 
-    scale=5.0, 
-    width=1024, 
-    height=1024, 
-    steps=28, 
+    seed=-1,
+    scale=5.0,
+    width=1024,
+    height=1024,
+    steps=28,
     sampler="k_euler",
-    schedule='native',
+    schedule="native",
     smea=False,
     dyn=False,
     dyn_threshold=False,
     cfg_rescale=0,
-    extra_infos = {},
+    extra_infos={},
 ):
     payload = {
-        "prompt": f'{prompt}, {QUALITY_TAGS}' if quality_tags else prompt,
-        "neg_prompt": f'{UCPRESET[ucpreset]}, {negative_prompt}' if ucpreset in UCPRESET else negative_prompt,
+        "prompt": f"{prompt}, {QUALITY_TAGS}" if quality_tags else prompt,
+        "neg_prompt": (
+            f"{UCPRESET[ucpreset]}, {negative_prompt}"
+            if ucpreset in UCPRESET
+            else negative_prompt
+        ),
         "seed": seed,
         "scale": scale,
         "width": width,
@@ -110,12 +114,12 @@ async def remote_gen(
         "dyn_threshold": dyn_threshold,
         "cfg_rescale": cfg_rescale,
         "extra_infos": (
-            extra_infos 
-            if isinstance(extra_infos, str) 
+            extra_infos
+            if isinstance(extra_infos, str)
             else json.dumps(extra_infos, ensure_ascii=False)
         ),
     }
-    response = await global_client.post(f'{end_point}/gen', json=payload)
+    response = await global_client.post(f"{end_point}/gen", json=payload)
     if response.status_code == 200:
         mem_file = io.BytesIO(response.content)
         mem_file.seek(0)
@@ -129,17 +133,17 @@ async def remote_gen(
 
 
 async def generate_novelai_image(
-    prompt="", 
+    prompt="",
     quality_tags=False,
     negative_prompt="",
     ucpreset="",
-    seed=-1, 
-    scale=5.0, 
-    width=1024, 
-    height=1024, 
-    steps=28, 
+    seed=-1,
+    scale=5.0,
+    width=1024,
+    height=1024,
+    steps=28,
     sampler="k_euler",
-    schedule='native',
+    schedule="native",
     smea=False,
     dyn=False,
     dyn_threshold=False,
@@ -152,7 +156,7 @@ async def generate_novelai_image(
     # Define the payload
     payload = {
         "action": "generate",
-        "input": f'{prompt}, {QUALITY_TAGS}' if quality_tags else prompt,
+        "input": f"{prompt}, {QUALITY_TAGS}" if quality_tags else prompt,
         "model": "nai-diffusion-3",
         "parameters": {
             "width": width,
@@ -167,35 +171,41 @@ async def generate_novelai_image(
             "controlnet_strength": 1,
             "dynamic_thresholding": dyn_threshold,
             "legacy": False,
-            "negative_prompt": f'{UCPRESET[ucpreset]}, {negative_prompt}' if ucpreset in UCPRESET else negative_prompt,
+            "negative_prompt": (
+                f"{UCPRESET[ucpreset]}, {negative_prompt}"
+                if ucpreset in UCPRESET
+                else negative_prompt
+            ),
             "noise_schedule": schedule,
             "qualityToggle": True,
             "seed": seed,
             "sm": smea,
             "sm_dyn": dyn,
             "uncond_scale": 1,
-        }
+        },
     }
 
     # Send the POST request
     response = await global_session.post(url, json=payload)
 
     # Process the response
-    if response.headers.get('Content-Type') == 'application/x-zip-compressed':
+    if response.headers.get("Content-Type") == "application/x-zip-compressed":
         zipfile_in_memory = io.BytesIO(response.content)
-        with zipfile.ZipFile(zipfile_in_memory, 'r') as zip_ref:
+        with zipfile.ZipFile(zipfile_in_memory, "r") as zip_ref:
             file_names = zip_ref.namelist()
             if file_names:
                 with zip_ref.open(file_names[0]) as file:
-                    return file.read(), json.dumps(payload, ensure_ascii=False, indent=2)
+                    return file.read(), json.dumps(
+                        payload, ensure_ascii=False, indent=2
+                    )
             else:
                 return "NAI doesn't return any images", response
     else:
         return "Generation failed", response
 
 
-def free_check(width:int, height:int, steps:int):
-    return width * height <= 1024 * 1024 and steps<=28
+def free_check(width: int, height: int, steps: int):
+    return width * height <= 1024 * 1024 and steps <= 28
 
 
 def image_from_bytes(data: bytes):
@@ -203,22 +213,26 @@ def image_from_bytes(data: bytes):
     img_file.seek(0)
     return Image.open(img_file)
 
-def process_image(image: Image, 
-                  metadata: dict[str, str] = None, 
-                  quality: int = 75,
-                  method: int = 4,
-                  ) -> bytes:
-    metadata_bytes:bytes | None = None
+
+def process_image(
+    image: Image,
+    metadata: dict[str, str] = None,
+    quality: int = 75,
+    method: int = 4,
+) -> bytes:
+    metadata_bytes: bytes | None = None
     if metadata:
         metadata_bytes = piexif.dump(metadata)
     # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#webp
     ret = io.BytesIO()
-    image.save(ret,
-               format = "webp",
-               quality = quality,
-               method = method,
-               lossless = False,
-               exact = False,
-               exif = metadata_bytes)
+    image.save(
+        ret,
+        format="webp",
+        quality=quality,
+        method=method,
+        lossless=False,
+        exact=False,
+        exif=metadata_bytes,
+    )
     ret.seek(0)
     return ret.read()
