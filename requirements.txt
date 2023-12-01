@@ -9,5 +9,4 @@ httpx
 snowflake-id
 discord
 pydantic
-aiohttp
 piexif
