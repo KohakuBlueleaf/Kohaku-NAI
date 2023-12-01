@@ -15,9 +15,11 @@ Copy-Item -Force .\dist\gen_server\gen_server.exe .\dist\KohakuNAI-bundle\
 Copy-Item -Force .\dist\gr_client\gr_client.exe .\dist\KohakuNAI-bundle\
 Copy-Item -Force .\dist\runner\runner.exe .\dist\KohakuNAI-bundle\
 Copy-Item -Force .\dist\dc_bots_main\dc_bots_main.exe .\dist\KohakuNAI-bundle\
+
 Copy-Item -Force -Recurse .\client_extensions .\dist\KohakuNAI-bundle
 Copy-Item -Force .\config.toml .\dist\KohakuNAI-bundle
 Copy-Item -Force .\dc-bot-config.json .\dist\KohakuNAI-bundle
+Copy-Item -Force .\client.css .\dist\KohakuNAI-bundle
 
 
 # Remove redundent files

@@ -1,9 +1,12 @@
 import os
+import time
+from threading import Thread
 from hashlib import sha3_256
 
 import toml
 import json
 import gradio as gr
+import webview
 
 from utils import remote_gen, remote_login, set_token, generate_novelai_image, image_from_bytes
 from client_modules import extension
@@ -48,8 +51,7 @@ def control_ui():
         width = gr.Slider(label="Width", value=1024, minimum=64, maximum=2048, step=64)
         height = gr.Slider(label="Height", value=1024, minimum=64, maximum=2048, step=64)
     
-    gen_btn = gr.Button(value="Generate", variant="primary")
-    return gen_btn, [width, height], [prompt, enable_quality_tags, neg_prompt, neg_preset, seed, scale, width, height, steps, sampler]
+    return [width, height], [prompt, enable_quality_tags, neg_prompt, neg_preset, seed, scale, width, height, steps, sampler]
 
 
 def settings_ui():
@@ -67,8 +69,8 @@ def settings_ui():
             with gr.Row():
                 smea = gr.Checkbox(False, label="SMEA")
                 dyn = gr.Checkbox(False, label="SMEA DYN")
-            with gr.Row():
                 dyn_threshold = gr.Checkbox(False, label="Dynamic Thresholding")
+            with gr.Row():
                 cfg_rescale = gr.Slider(0, 1, 0, step=0.01, label="CFG rescale")
         
         with gr.Column():
@@ -106,7 +108,7 @@ async def generate(mode, end_point, end_point_pswd, token, prompt, enable_qualit
     elif mode == 'local':
         set_token(token)
         img_data, _ = await generate_novelai_image(
-            prompt, enable_quality_tags, neg_prompt, neg_preset, neg_prompt, seed, scale, 
+            prompt, enable_quality_tags, neg_prompt, neg_preset, seed, scale, 
             width, height, steps, sampler, scheduler, 
             smea, dyn, dyn_threshold, cfg_rescale
         )
@@ -130,10 +132,8 @@ async def generate(mode, end_point, end_point_pswd, token, prompt, enable_qualit
 
 
 def preview_ui():
-    with gr.Blocks(css='#preview_image { height: 100%;}') as page:
-        h_slider = gr.Slider(label="Height", value=500, minimum=100, maximum=1200, step=10)
-        image = gr.Gallery(elem_id='preview_image', height=500)
-    h_slider.change(lambda h: gr.Gallery(height=h), h_slider, image)
+    with gr.Blocks() as page:
+        image = gr.Gallery(elem_id='preview_image')
     return image
 
 
@@ -143,10 +143,11 @@ def main_ui():
             with gr.Column():
                 with gr.Tabs():
                     with gr.TabItem('Gen'):
-                        gen_btn, (width, height), controls = control_ui()
+                        (width, height), controls = control_ui()
                     with gr.TabItem('Settings'):
                         adv_controls, modes = settings_ui()
             with gr.Column():
+                gen_btn = gr.Button(value="Generate", variant="primary")
                 image = preview_ui()
     mode = modes[0]
     width.change(
@@ -163,16 +164,20 @@ def main_ui():
 
 def util_ui():
     with gr.Blocks() as page:
-        gr.Text('WIP')
+        gr.Markdown('# WIP')
     return page
 
 
 def ui():
-    with gr.Blocks(title="NAI Client by Kohaku") as website:
-        with gr.Tabs():
-            with gr.TabItem("Main"):
+    with gr.Blocks(
+        title="NAI Client by Kohaku", 
+        theme=gr.themes.Soft(),
+        css=open('client.css', 'r', encoding='utf-8').read()
+    ) as website:
+        with gr.Tabs(elem_id='main-tabs'):
+            with gr.Tab("Main", elem_classes='page-tab'):
                 main_ui()
-            with gr.TabItem("Util"):
+            with gr.Tab("Util", elem_classes='page-tab'):
                 util_ui()
     return website
 
@@ -180,5 +185,22 @@ def ui():
 if __name__ == '__main__':
     extension.load_extensions()
     website = ui()
-    website.launch()
-    input('Press Enter to close...')
+    gr_thread = Thread(
+        target=website.launch, 
+        daemon=True,
+        kwargs={
+            'inbrowser': not client_config.get('use_standalone_window', False)
+        }
+    )
+    gr_thread.start()
+    time.sleep(0.05)
+    if client_config.get('use_standalone_window', False):
+        webview.create_window(
+            'NAI Client', 
+            website.local_url + '?__theme=dark', 
+            resizable=True,
+            zoomable=True
+        )
+        webview.start()
+    else:
+        input('Press Enter to close gradio')
