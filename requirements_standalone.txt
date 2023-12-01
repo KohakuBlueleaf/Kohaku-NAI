@@ -1,8 +1,0 @@
-fastapi
-pillow
-numpy
-gradio
-toml
-curl_cffi
-httpx
-snowflake-id

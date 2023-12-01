@@ -1,4 +1,5 @@
 fastapi
+itsdangerous
 pillow
 numpy
 gradio
