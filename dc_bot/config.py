@@ -1,0 +1,2 @@
+GEN_SERVER_URL = ''
+GEN_SERVER_PSWD = ''

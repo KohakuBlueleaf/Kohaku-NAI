@@ -9,6 +9,8 @@ from discord.ext.commands import CommandNotFound, Context
 
 from .functions import *
 from .dc_views import NAIImageGen
+from . import config
+
 from utils import remote_login, remote_gen, DEFAULT_ARGS
 
 
@@ -103,9 +105,9 @@ class KohakuNai(dc_commands.Cog):
         gen_command = make_summary(default_args, self.prefix, DEFAULT_ARGS)
         gen_message = await ctx.reply(content=f"### Generating with command:\n{gen_command}")
         async with ctx.typing():
-            await remote_login('http://127.0.0.1:7000', '123456')
+            await remote_login(config.GEN_SERVER_URL, config.GEN_SERVER_PSWD)
             img, info = await remote_gen(
-                'http://127.0.0.1:7000',
+                config.GEN_SERVER_URL,
                 extra_infos={'save_folder': 'discord-bot'},
                 **default_args
             )

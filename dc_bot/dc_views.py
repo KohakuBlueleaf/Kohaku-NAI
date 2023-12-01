@@ -3,6 +3,7 @@ import io
 import discord
 
 from .functions import make_summary
+from . import config
 from utils import remote_login, remote_gen, DEFAULT_ARGS
 
 
@@ -84,9 +85,9 @@ class NAIImageGen(discord.ui.View):
         gen_command = make_summary(self.generate_config, self.prefix, DEFAULT_ARGS)
         await self.origin.edit_original_response(content=f"### Generating with command:\n{gen_command}", view=None, embed=None)
         await interaction.response.defer(thinking=True)
-        await remote_login('http://127.0.0.1:7000', '123456')
+        await remote_login(config.GEN_SERVER_URL, config.GEN_SERVER_PSWD)
         img, info = await remote_gen(
-            'http://127.0.0.1:7000',
+            config.GEN_SERVER_URL,
             extra_infos={'save_folder': 'discord-bot'},
             **self.generate_config
         )
