@@ -5,8 +5,14 @@ Also a stable-diffusion-webui extension.
 
 **Sharing your account to your friends may violate the NAI's TOS. USE AT YOUR OWN RISK!!!**
 
+### Demo for standalone client and SD-WebUI extension
 |![image](https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/8d679565-a578-4c50-8e97-fcedf77f4271)|![image](https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/3ce65dff-68a7-4122-bec9-58c6bd4ade01)|
 | --- | ---|
+
+### Demo for DC bot
+https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/3da2eca2-edc0-4caa-9d55-c68e563b9be8
+
+
 ## Features
 * Generation Server for managing manual rate limit and saving the images automatically.
 * Standalone Client which can connect to NAI directly or connect to the generation server.
