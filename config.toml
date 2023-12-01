@@ -1,11 +1,15 @@
 [gen_server]
     host = "0.0.0.0"
     port = 7000
-    max_jobs = 5
+    max_jobs = 2
     min_delay = 1.0
     save_path = "./data"
     token = ""
     always_require_auth = false
+    save_directly = false
+    separate_metadata = false
+    compression_quality = 75
+    compression_method = 6
     
     [[gen_server.auth]]
         password = "123456"

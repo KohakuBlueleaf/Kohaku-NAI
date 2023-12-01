@@ -4,23 +4,24 @@ import random
 import io
 import zipfile
 import json
+import piexif
 
 from PIL import Image
 from httpx import AsyncClient
 from curl_cffi.requests import AsyncSession
 
 
-if sys.platform == 'win32':
+if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
-jwt_token = ''
+jwt_token = ""
 url = "https://api.novelai.net/ai/generate-image"
 global_session = AsyncSession(timeout=3600, impersonate='chrome110')
 global_client = AsyncClient(timeout=3600)
 
 
-def set_token(token):
+def set_token(token:str):
     global jwt_token, global_session
     if jwt_token == token:
         return
@@ -193,11 +194,31 @@ async def generate_novelai_image(
         return "Generation failed", response
 
 
-def free_check(width, height, steps):
+def free_check(width:int, height:int, steps:int):
     return width * height <= 1024 * 1024 and steps<=28
 
 
-def image_from_bytes(data):
+def image_from_bytes(data: bytes):
     img_file = io.BytesIO(data)
     img_file.seek(0)
     return Image.open(img_file)
+
+def process_image(image: Image, 
+                  metadata: dict[str, str] = None, 
+                  quality: int = 75,
+                  method: int = 4,
+                  ) -> bytes:
+    metadata_bytes:bytes | None = None
+    if metadata:
+        metadata_bytes = piexif.dump(metadata)
+    # https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#webp
+    ret = io.BytesIO()
+    image.save(ret,
+               format = "webp",
+               quality = quality,
+               method = method,
+               lossless = False,
+               exact = False,
+               exif = metadata_bytes)
+    ret.seek(0)
+    return ret.read()
