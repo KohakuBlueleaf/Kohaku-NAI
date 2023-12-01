@@ -10,6 +10,7 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 from hashlib import sha3_256
+import logging
 
 import toml
 from pydantic import BaseModel
@@ -21,7 +22,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from utils import generate_novelai_image, free_check, set_token, image_from_bytes, process_image
 from request import GenerateRequest
 from config_spec import GenServerConfig
-
 
 id_gen = SnowflakeGenerator(1)
 
@@ -48,8 +48,10 @@ def save_img(save_path: str, sub_folder: str, image: bytes, json: str):
     
     img_hash = sha3_256(image).hexdigest()
     img_id = next(id_gen)
+    img_extension = "png" if server_config.get("save_directly", False) else "webp"
+    img_name = f'{img_id}_{img_hash[:8]}.{img_extension}'
     
-    with open(os.path.join(sub_folder_path, f'{img_id}_{img_hash[:8]}.png'), 'wb') as f:
+    with open(os.path.join(sub_folder_path, img_name), 'wb') as f:
         f.write(image)
     if is_separate_metadata:
         metadata_name = f"{img_id}_{img_hash[:8]}.json"
@@ -75,13 +77,13 @@ async def login(password: str, request: Request):
 async def gen(context: GenerateRequest, request: Request):
     global prev_gen_time
     
-    signed = request.session.get('signed', False)
-    freeonly = request.session.get('free_only', True)
+    is_signed = request.session.get('signed', False)
+    is_free_only = request.session.get('free_only', True)
     try:
         extra_infos = json.loads(context.extra_infos)
     except:
         return Response(json.dumps({'status': 'Extra infos in invalid format, please send json strings.'}), 403)
-    always_require_auth = server_config['always_require_auth']
+    is_always_require_auth = server_config.get('always_require_auth', True)
     is_free_gen = free_check(context.width, context.height, context.steps)
     
     save_path = request.session.get('save_path', server_config['save_path'])
@@ -91,8 +93,8 @@ async def gen(context: GenerateRequest, request: Request):
         sub_folder = ''
     safe_folder_name = re.sub(r'[^\w\-_\. ]', '_', sub_folder)
     
-    if ((not signed and (always_require_auth or not is_free_gen))
-        or (freeonly and not is_free_gen)):
+    if ((not is_signed and (is_always_require_auth or not is_free_gen))
+        or (is_free_only and not is_free_gen)):
         return Response(json.dumps({'status': 'Config not allowed'}), 403)
     
     async with generate_semaphore:
@@ -140,14 +142,15 @@ async def gen(context: GenerateRequest, request: Request):
     await asyncio.get_running_loop().run_in_executor(
         save_worker, save_img, save_path, safe_folder_name, img_bytes, json_payload
     )
+    media_type = "image/png" if is_save_raw else "image/webp"
     
-    return Response(img_bytes, media_type="image/png")
+    return Response(img_bytes, media_type=media_type)
 
 @click.command()
 @click.option("-c", "--config", default="config.toml", help="Config file path", type=click.Path(exists=True))
 def main(config: str):
     global server_config, auth_configs, generate_semaphore
-    server_config = toml.load(config)
+    server_config = toml.load(config)["gen_server"]
     auth_configs = server_config.get('auth', [])
     set_token(server_config["token"])
     generate_semaphore = asyncio.Semaphore(server_config['max_jobs'])
