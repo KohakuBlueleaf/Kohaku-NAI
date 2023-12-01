@@ -15,9 +15,10 @@ class GenServerConfig(TypedDict):
     min_delay: float
     save_path: str
     token: str
-    always_auth: bool
+    always_require_auth: bool
     separate_metadata: bool
     # directly save image to disk without compression or metadata
+    # if this is True, compression_quality and compression_method will be ignored
     save_directly: bool
     # [0, 100]
     compression_quality: int

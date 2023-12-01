@@ -19,29 +19,11 @@ from fastapi import FastAPI, Request, Response
 from starlette.middleware.sessions import SessionMiddleware
 
 from utils import generate_novelai_image, free_check, set_token, image_from_bytes, process_image
+from request import GenerateRequest
 from config_spec import GenServerConfig
 
 
 id_gen = SnowflakeGenerator(1)
-
-
-class GenerateRequest(BaseModel):
-    prompt: str
-    neg_prompt: str
-    seed: int
-    scale: float
-    width: int
-    height: int
-    steps: int
-    sampler: str
-    schedule: str
-    smea: bool = False
-    dyn: bool = False
-    dyn_threshold: bool = False
-    cfg_rescale: float = 0.0
-    img_sub_folder: str = ""
-    extra_infos: str = ""
-
 
 server_config: None | GenServerConfig = None
 auth_configs : list[GenServerConfig] = []
@@ -150,6 +132,8 @@ async def gen(context: GenerateRequest, request: Request):
         img = image_from_bytes(img_bytes)
         quality = server_config.get("compression_quality", 75)
         method = server_config.get("compression_method", 4)
+        assert 0 <= quality <= 100, "Compression quality must be in [0, 100]"
+        assert 0 <= method <= 6, "Compression method must be in [0, 6]"
         metadata = json_payload
         img_bytes = process_image(img, metadata, quality, method)
 
