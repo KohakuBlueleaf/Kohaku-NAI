@@ -88,3 +88,19 @@ Check the example `dc-bot-config.json`. Change the token/prefix to your bot's. A
     - [ ] auto gen
 * API
     - [ ] Fetch Account info (if possible?)
+
+
+## Disclaimer
+The Kohaku-NAI project, including its standalone gradio client, CLI client, gen server and stable-diffusion-webui extension for using NovelAI api conveniently, is provided "as is" without warranty of any kind, either expressed or implied. While every effort has been made to ensure the functionality and reliability of the software, the creators of Kohaku-NAI do not guarantee its absolute safety, efficiency, or compatibility with all systems.
+
+Users should be aware that the use of Kohaku-NAI involves certain risks, including but not limited to:
+
+* Potential violation of Novel-AI's Terms of Service if sharing accounts, hosting gen server as service or hosting dc bots as service. Users are responsible for adhering to all applicable terms and conditions set forth by Novel-AI.
+* Possible software bugs or malfunctions, which may result in data loss or other damages. Users are advised to frequently back up their data when using Kohaku-NAI.
+* Variability in the performance of the software depending on the user's hardware, software, and other technical configurations.
+
+By using Kohaku-NAI, users acknowledge and agree that they are doing so at their own risk. The developers of Kohaku-NAI shall not be liable for any direct, indirect, incidental, special, consequential, or exemplary damages arising from the use or inability to use the software.
+
+Users are encouraged to report any bugs or issues to the development team to help improve Kohaku-NAI. Feedback and contributions are always welcome.
+
+This disclaimer is subject to changes and updates, and users are advised to review it periodically.
