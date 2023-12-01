@@ -25,3 +25,5 @@ Copy-Item -Force .\client.css .\dist\KohakuNAI-bundle
 # Remove redundent files
 Remove-Item -Recurse .\dist\KohakuNAI-bundle\_internal\gradio\node\dev
 Remove-Item -Recurse -Include *.map .\dist\KohakuNAI-bundle\_internal\gradio
+
+Compress-Archive -Force -Path .\dist\KohakuNAI-bundle\* -DestinationPath .\dist\KohakuNAI-bundle.zip
