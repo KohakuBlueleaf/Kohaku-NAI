@@ -9,7 +9,10 @@ with open('./dc-bot-config.json','r',encoding='utf-8') as f:
 p_list = []
 for config in bots_config['test_bots']:
     config_str = dumps(config, ensure_ascii=False)
-    p_list.append(Popen([bots_config['python-script'], '-m', 'dc_bot.runner', config_str]))
+    if bots_config['pyinstaller']:
+        p_list.append(Popen([bots_config['pyinstaller-script'], config_str]))
+    else:
+        p_list.append(Popen([bots_config['python-script'], '-m', 'dc_bot.runner', config_str]))
 
 
 input()

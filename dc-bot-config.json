@@ -9,5 +9,7 @@
       "intents": true
     }
   ],
-  "python-script": "python"
+  "python-script": "python",
+  "pyinstaller": false,
+  "pyinstaller-script": "runner.exe"
 }
