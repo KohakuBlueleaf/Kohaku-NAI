@@ -136,7 +136,9 @@ async def gen(context: GenerateRequest, request: Request):
         method = server_config.get("compression_method", 4)
         assert 0 <= quality <= 100, "Compression quality must be in [0, 100]"
         assert 0 <= method <= 6, "Compression method must be in [0, 6]"
-        metadata = json_payload
+        # https://exiftool.org/TagNames/EXIF.html
+        # 0x9286 UserComment
+        metadata = {"Exif": {0x9286: bytes(json_payload, "utf-8")}} 
         img_bytes = process_image(img, metadata, quality, method)
 
     await asyncio.get_running_loop().run_in_executor(
