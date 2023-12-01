@@ -1,3 +1,5 @@
+import sys
+import asyncio
 import random
 import io
 import zipfile
@@ -6,6 +8,10 @@ import json
 from PIL import Image
 from httpx import AsyncClient
 from curl_cffi.requests import AsyncSession
+
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 jwt_token = ''
@@ -86,7 +92,7 @@ async def remote_gen(
     dyn=False,
     dyn_threshold=False,
     cfg_rescale=0,
-    extra_infos = '',
+    extra_infos = {},
 ):
     payload = {
         "prompt": f'{prompt}, {QUALITY_TAGS}' if quality_tags else prompt,

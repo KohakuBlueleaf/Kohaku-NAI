@@ -147,3 +147,4 @@ async def gen(context: GenerateRequest, request: Request):
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host=server_config['host'], port=server_config['port'])
+    input('Press Enter to close...')

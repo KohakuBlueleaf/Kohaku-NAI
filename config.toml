@@ -19,11 +19,16 @@
 
 
 [client]
-    mode = "remote"
     autosave = true
     save_path = "./data_client"
+    
+    mode = "remote"
     end_point = "http://127.0.0.1:7000"
     end_point_pswd = "123456"
     token = ""
-    default_quality = "best quality, amazing quality, very aesthetic, absurdres"
-    default_neg = "lowres, {bad}, worst quality, jpeg artifacts, watermark, signature, artistic error, username, scan, text"
+    
+    default_prompt = "1girl, loli, dragon girl, dragon wings, dragon tail, dragon horns, pointy ears, long pink hair, purple eyes, black dress"
+    default_neg = "nsfw"
+    
+    [client.remote_extra_infos]
+        save_folder = "guest1"
