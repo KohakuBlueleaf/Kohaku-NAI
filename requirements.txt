@@ -10,3 +10,4 @@ snowflake-id
 discord
 pydantic
 piexif
+loguru
