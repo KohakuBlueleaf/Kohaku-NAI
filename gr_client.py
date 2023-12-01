@@ -108,7 +108,7 @@ async def generate(mode, end_point, end_point_pswd, token, prompt, enable_qualit
     elif mode == 'local':
         set_token(token)
         img_data, _ = await generate_novelai_image(
-            prompt, enable_quality_tags, neg_prompt, neg_preset, neg_prompt, seed, scale, 
+            prompt, enable_quality_tags, neg_prompt, neg_preset, seed, scale, 
             width, height, steps, sampler, scheduler, 
             smea, dyn, dyn_threshold, cfg_rescale
         )
