@@ -8,3 +8,5 @@ curl_cffi
 httpx
 snowflake-id
 discord
+pydantic
+piexif
