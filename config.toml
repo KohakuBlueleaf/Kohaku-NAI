@@ -20,6 +20,7 @@
 
 [client]
     autosave = true
+    use_standalone_window = true
     save_path = "./data_client"
     
     mode = "remote"
