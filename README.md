@@ -30,14 +30,19 @@ Once you restart your sd-webui, you can find a "Kohaku NAI Client" option under 
 
 Put your token (or generation server's url) into settings, save them. And then choose "Kohaku NAI Client" option in the "Script" dropdown. Now you can generate images with NAI api within sd-webui.
 
-### Setup for standalone usage or gen-server
+---
+
+### Setup for standalone usage or gen-server or cli or dc bot
 ```
 git clone https://github.com/KohakuBlueleaf/Kohaku-NAI.git
 cd Kohaku-NAI
+python -m venv venv
+./venv/Script/activate
 python -m pip install -r ./requirements.txt
 ```
+---
 
-### Standalone Client
+### Standalone Gradio Client
 If you just want to use it as a standalone client.
 Just change the `mode` of the client section in the `config.toml` to `local` and put your NovelAI API token to `token`.
 
@@ -46,32 +51,37 @@ If you want to connect to others' generation servers, contact the server maintai
 
 And then use `python ./gr_client.py` to run it.
 
+---
+
+### Standalone Client
+`python ./cli_client.py --help` for more informations.
+
+---
+
 ### Generation Server
 Put your NAI token into `token` in the server section in the `config.toml`.
 
 use `python ./gen_server.py` to run it.
 
-You can also use uvicorn to deploy it:
+You can also use uvicorn to deploy it: (not recommended)
 ```
 uvicorn gen_server:app
 ```
 
+---
+
 ### DC bot
-**experimental, coding skill are required for use it at this time**
+Check the example `dc-bot-config.json`. Change the token/prefix to your bot's. And the `url` and `passowrd` are for your gen-server.
 
-For now, dc bot's config for gen server is hard coded.
-If you want to use it, change the content in the dc-bot-config.json
-
-And then find the url/password in `dc_bot/dc_views.py` and `dc_bot/nai_bot.py`. Change them into your url.
-
-(Due to the property of DC bot, I have no plan to add "local gen" for it. Start to use gen server!)
+---
 
 
 ## Future Plan
 * Client
     - [ ] Better Client (maybe static website implemented in Vue)
     - [x] sd-webui extensions
-    - [x] Discord bot 
+    - [x] Discord bot
+    - [x] CLI
 * Utils
     - [ ] Random Prompts
     - [x] Wildcard [built-in extensions]
