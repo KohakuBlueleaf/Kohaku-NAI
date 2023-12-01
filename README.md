@@ -10,6 +10,7 @@ Also a stable-diffusion-webui extension.
 ## Features
 * Generation Server for managing manual rate limit and saving the images automatically.
 * Standalone Client which can connect to NAI directly or connect to the generation server.
+* DC bot based on gen server.
 
 ## Usage
 
@@ -49,11 +50,22 @@ You can also use uvicorn to deploy it:
 uvicorn gen_server:app
 ```
 
+### DC bot
+**experimental, coding skill are required for use it at this time**
+
+For now, dc bot's config for gen server is hard coded.
+If you want to use it, change the content in the dc-bot-config.json
+
+And then find the url/password in `dc_bot/dc_views.py` and `dc_bot/nai_bot.py`. Change them into your url.
+
+(Due to the property of DC bot, I have no plan to add "local gen" for it. Start to use gen server!)
+
 
 ## Future Plan
 * Client
     - [ ] Better Client (maybe static website implemented in Vue)
     - [x] sd-webui extensions
+    - [x] Discord bot 
 * Utils
     - [ ] Random Prompts
     - [x] Wildcard [built-in extensions]
