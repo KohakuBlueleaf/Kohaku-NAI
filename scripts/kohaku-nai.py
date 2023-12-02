@@ -173,7 +173,7 @@ class KohakuNAIScript(scripts.Script):
             ]
         if any(img is None for img in imgs):
             failed_img_data = next(
-                img_data for img_data in img_datas if not isinstance(img_data[1], bytes)
+                img_data for img_data in img_datas if not isinstance(img_data, bytes)
             )
             raise Exception("Failed to generate image: " + str(failed_img_data))
         nai_infos = [images.read_info_from_image(img) for img in imgs]
