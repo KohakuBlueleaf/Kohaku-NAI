@@ -282,7 +282,8 @@ if __name__ == "__main__":
         kwargs={"inbrowser": not client_config.get("use_standalone_window", False)},
     )
     gr_thread.start()
-    time.sleep(0.05)
+    while not website.local_url:
+        time.sleep(0.01)
     if client_config.get("use_standalone_window", False):
         webview.create_window(
             "NAI Client",
