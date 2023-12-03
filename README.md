@@ -37,7 +37,7 @@ Put your token (or generation server's url) into settings, save them. And then c
 git clone https://github.com/KohakuBlueleaf/Kohaku-NAI.git
 cd Kohaku-NAI
 python -m venv venv
-./venv/Script/activate
+./venv/Scripts/activate
 python -m pip install -r ./requirements.txt
 ```
 ---
