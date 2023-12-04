@@ -4,7 +4,7 @@
       "name": "NAME",
       "prefix": "xx.",
       "description": "NAI bot",
-      "extension_path": "dc_bot.nai_bot",
+      "extension_path": "kohaku_nai.dc_bot_modules.nai_bot",
       "token": "YOUR TOKEN",
       "intents": true,
       "url": "http://127.0.0.1:7000",

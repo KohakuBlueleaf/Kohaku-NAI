@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['../dc_bots_main.py'],
+    ['../kohaku_nai/dc_bot.py'],
     pathex=[],
     binaries=[],
     datas=[],

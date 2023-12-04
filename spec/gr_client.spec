@@ -8,7 +8,7 @@ datas += collect_data_files('curl_cffi')
 
 
 a = Analysis(
-    ['../gr_client.py'],
+    ['../kohaku_nai/gr_client.py'],
     pathex=[],
     binaries=[],
     datas=datas,

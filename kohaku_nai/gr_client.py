@@ -14,7 +14,7 @@ from .utils import (
     generate_novelai_image,
     image_from_bytes,
 )
-from client_modules import extension
+from .client_modules import extension
 
 
 client_config: dict = toml.load("config.toml")["client"]

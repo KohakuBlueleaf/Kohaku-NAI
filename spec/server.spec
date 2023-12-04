@@ -6,7 +6,7 @@ datas += collect_data_files('curl_cffi')
 
 
 a = Analysis(
-    ['../gen_server.py'],
+    ['../kohaku_nai/server.py'],
     pathex=[],
     binaries=[],
     datas=datas,

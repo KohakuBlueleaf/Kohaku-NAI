@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['../dc_bot/runner.py'],
+    ['../kohaku_nai/dc_bot_modules/runner.py'],
     pathex=[],
     binaries=[],
     datas=[],
