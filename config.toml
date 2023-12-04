@@ -4,6 +4,7 @@
     max_jobs = 2
     min_delay = 1.0
     save_path = "./data"
+    http_backend = "curl_cffi" # or "httpx"
     token = ""
     always_require_auth = false
     save_directly = false
@@ -28,6 +29,7 @@
     save_path = "./data_client"
     
     mode = "remote"
+    http_backend = "httpx" # or "curl_cffi"
     end_point = "http://127.0.0.1:7000"
     end_point_pswd = "123456"
     token = ""

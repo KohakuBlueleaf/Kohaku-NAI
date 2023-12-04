@@ -168,7 +168,7 @@ async def main(config: str):
     global server_config, auth_configs, generate_semaphore
     server_config = toml.load(config)["gen_server"]
     auth_configs = server_config.get("auth", [])
-    status = await set_client("curl_cffi", token=server_config["token"])
+    status = await set_client(server_config.get("http_backend", "curl_cffi"), token=server_config["token"])
     assert status is not None
     generate_semaphore = asyncio.Semaphore(server_config["max_jobs"])
     server = Server(Config(

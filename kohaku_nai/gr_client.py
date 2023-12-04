@@ -102,6 +102,9 @@ def settings_ui():
             mode = gr.Radio(
                 ["remote", "local"], value=client_config["mode"], label="Mode"
             )
+            backend = gr.Radio(
+                ["curl_cffi", "httpx"], value=client_config.get("backend", "curl_cffi"), label="Http Backend", info="use \"httpx\" if you met issues with \"curl_cffi\""
+            )
             with gr.Column(visible=client_config["mode"] == "remote") as remote_blk:
                 end_point = gr.Textbox(client_config["end_point"], label="End Point")
                 end_point_pswd = gr.Textbox(
@@ -122,6 +125,7 @@ def settings_ui():
 
     return [scheduler, smea, dyn, dyn_threshold, cfg_rescale, extra_info_json], [
         mode,
+        backend,
         end_point,
         end_point_pswd,
         token,
@@ -130,6 +134,7 @@ def settings_ui():
 
 async def generate(
     mode,
+    backend,
     end_point,
     end_point_pswd,
     token,
@@ -155,7 +160,7 @@ async def generate(
 
     if mode == "remote":
         if (pswd := end_point_pswd) or (pswd := client_config["end_point_pswd"]):
-            await set_client("httpx", end_point, pswd)
+            await set_client(backend, end_point, pswd)
         img, img_data = await remote_gen(
             end_point,
             prompt,
@@ -176,7 +181,7 @@ async def generate(
             extra_info_json,
         )
     elif mode == "local":
-        await set_client("curl_cffi", token=token)
+        await set_client(backend, token=token)
         img_data, _ = await generate_novelai_image(
             prompt,
             enable_quality_tags,
