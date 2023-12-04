@@ -2,8 +2,8 @@ import io
 
 import discord
 
-from kohaku_nai.functions import make_summary
-from kohaku_nai. import config
+from kohaku_nai.dc_bot_modules.functions import make_summary
+from kohaku_nai.dc_bot_modules import config
 from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS
 
 
