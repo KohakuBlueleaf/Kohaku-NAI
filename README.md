@@ -49,29 +49,29 @@ Just change the `mode` of the client section in the `config.toml` to `local` and
 If you want to connect to others' generation servers, contact the server maintainer for endpoint url.
 (If you are the server owner, check next section)
 
-And then use `python ./gr_client.py` to run it.
+And then use `python -m kohaku_nai.gr_client` to run it.
 
 ---
 
 ### Standalone Client
-`python ./cli_client.py --help` for more informations.
+`python -m kohaku_nai.cli_client --help` for more informations.
 
 ---
 
 ### Generation Server
 Put your NAI token into `token` in the server section in the `config.toml`.
 
-use `python ./gen_server.py` to run it.
-
-You can also use uvicorn to deploy it: (not recommended)
-```
-uvicorn gen_server:app
-```
+use `python -m kohaku_nai.server` to run it.
 
 ---
 
 ### DC bot
 Check the example `dc-bot-config.json`. Change the token/prefix to your bot's. And the `url` and `passowrd` are for your gen-server.
+
+And then run:
+```
+python -m kohaku_nai.dc_bot
+```
 
 ---
 
