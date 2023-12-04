@@ -20,7 +20,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='dc_bots_main',
+    name='dc_bot',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -39,5 +39,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='dc_bots_main',
+    name='dc_bot',
 )

@@ -26,7 +26,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='gen_server',
+    name='server',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -45,5 +45,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='gen_server',
+    name='server',
 )
