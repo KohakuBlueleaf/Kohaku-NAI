@@ -16,15 +16,15 @@ from snowflake import SnowflakeGenerator
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.sessions import SessionMiddleware
 
-from .utils import (
+from kohaku_nai.utils import (
     generate_novelai_image,
     free_check,
     set_client,
     image_from_bytes,
     process_image,
 )
-from .request import GenerateRequest
-from .config_spec import GenServerConfig
+from kohaku_nai.request import GenerateRequest
+from kohaku_nai.config_spec import GenServerConfig
 
 id_gen = SnowflakeGenerator(1)
 

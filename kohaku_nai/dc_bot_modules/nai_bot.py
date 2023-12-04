@@ -7,9 +7,9 @@ import discord.ext.commands as dc_commands
 from discord import app_commands
 from discord.ext.commands import CommandNotFound, Context
 
-from .functions import *
-from .dc_views import NAIImageGen
-from . import config
+from kohaku_nai.functions import *
+from kohaku_nai.dc_views import NAIImageGen
+from kohaku_nai. import config
 
 from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS
 

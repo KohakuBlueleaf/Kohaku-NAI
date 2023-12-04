@@ -7,7 +7,7 @@ from json import loads
 import discord
 from discord.ext import commands
 
-from . import config
+from kohaku_nai. import config
 
 
 print(sys.version_info)

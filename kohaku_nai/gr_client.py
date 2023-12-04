@@ -8,13 +8,13 @@ import json
 import gradio as gr
 import webview
 
-from .utils import (
+from kohaku_nai.utils import (
     remote_gen,
     set_client,
     generate_novelai_image,
     image_from_bytes,
 )
-from .client_modules import extension
+from kohaku_nai.client_modules import extension
 
 
 client_config: dict = toml.load("config.toml")["client"]

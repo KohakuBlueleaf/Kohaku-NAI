@@ -5,7 +5,7 @@ import click
 import httpx
 from loguru import logger
 
-from .request import GenerateRequest
+from kohaku_nai.request import GenerateRequest
 
 
 class AspectRatio(str, Enum):

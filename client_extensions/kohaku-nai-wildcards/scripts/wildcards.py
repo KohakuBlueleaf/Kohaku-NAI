@@ -2,7 +2,7 @@ import os
 import re
 from random import choice
 
-from client_modules.extension import Extension, register_extension, basedir
+from kohaku_nai.client_modules.extension import Extension, register_extension, basedir
 
 
 wildcard_format = re.compile(r"__([^_]+)__")
