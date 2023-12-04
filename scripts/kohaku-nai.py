@@ -117,56 +117,58 @@ class KohakuNAIScript(scripts.Script):
                 )
             )
             datas = loop.run_until_complete(
-                run_tasks([
-                    remote_gen(
-                        shared.opts.knai_remote_server,
-                        p.prompts[i],
-                        False,
-                        p.negative_prompts[i],
-                        "",
-                        p.seeds[i],
-                        p.cfg_scale,
-                        p.width,
-                        p.height,
-                        p.steps,
-                        sampler,
-                        scheduler,
-                        smea,
-                        dyn,
-                        dyn_threshold,
-                        cfg_rescale,
-                        shared.opts.knai_remote_server_ex_infos,
-                    )
-                    for i in range(p.batch_size)
-                ])
+                run_tasks(
+                    [
+                        remote_gen(
+                            shared.opts.knai_remote_server,
+                            p.prompts[i],
+                            False,
+                            p.negative_prompts[i],
+                            "",
+                            p.seeds[i],
+                            p.cfg_scale,
+                            p.width,
+                            p.height,
+                            p.steps,
+                            sampler,
+                            scheduler,
+                            smea,
+                            dyn,
+                            dyn_threshold,
+                            cfg_rescale,
+                            shared.opts.knai_remote_server_ex_infos,
+                        )
+                        for i in range(p.batch_size)
+                    ]
+                )
             )
             imgs = [img for img, _ in datas]
             img_datas = [img_data for _, img_data in datas]
         else:
-            set_client(
-                "curl_cffi", token=shared.opts.knai_token.strip()
-            )
+            set_client("curl_cffi", token=shared.opts.knai_token.strip())
             datas = loop.run_until_complete(
-                run_tasks([
-                    generate_novelai_image(
-                        p.prompts[i],
-                        False,
-                        p.negative_prompts[i],
-                        "",
-                        p.seeds[i],
-                        p.cfg_scale,
-                        p.width,
-                        p.height,
-                        p.steps,
-                        sampler,
-                        scheduler,
-                        smea,
-                        dyn,
-                        dyn_threshold,
-                        cfg_rescale,
-                    )
-                    for i in range(p.batch_size)
-                ])
+                run_tasks(
+                    [
+                        generate_novelai_image(
+                            p.prompts[i],
+                            False,
+                            p.negative_prompts[i],
+                            "",
+                            p.seeds[i],
+                            p.cfg_scale,
+                            p.width,
+                            p.height,
+                            p.steps,
+                            sampler,
+                            scheduler,
+                            smea,
+                            dyn,
+                            dyn_threshold,
+                            cfg_rescale,
+                        )
+                        for i in range(p.batch_size)
+                    ]
+                )
             )
             img_datas = [img_data for img_data, _ in datas]
             imgs = [

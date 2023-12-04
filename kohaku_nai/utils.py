@@ -19,7 +19,7 @@ API_URL = "https://api.novelai.net"
 
 
 jwt_token = ""
-global_client: AsyncClient|AsyncSession|None = None
+global_client: AsyncClient | AsyncSession | None = None
 
 
 async def set_client(
@@ -35,7 +35,7 @@ async def set_client(
         client_class = AsyncClient
     else:
         client_class = AsyncSession
-    
+
     if remote_server:
         global_client = client_class(timeout=3600)
         payload = {"password": password}
@@ -52,7 +52,7 @@ async def set_client(
                 "Referer": "https://novelai.net/",
             },
         }
-        if backend == 'curl_cffi':
+        if backend == "curl_cffi":
             kwargs["impersonate"] = "chrome110"
         global_client = client_class(**kwargs)
         status = await global_client.get(f"{API_URL}/user/data")
@@ -199,7 +199,7 @@ async def generate_novelai_image(
     }
 
     # Send the POST request
-    response = await global_client.post(f'{API_URL}/ai/generate-image', json=payload)
+    response = await global_client.post(f"{API_URL}/ai/generate-image", json=payload)
 
     # Process the response
     if response.headers.get("Content-Type") == "application/x-zip-compressed":

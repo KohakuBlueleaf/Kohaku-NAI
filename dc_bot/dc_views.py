@@ -130,12 +130,11 @@ class NAIImageGen(discord.ui.View):
             else:
                 error_embed.add_field(name="info", value=str(info))
             await interaction.followup.send(
-                content=f"### Generation Failed:\n{gen_command}",
-                embed=error_embed
+                content=f"### Generation Failed:\n{gen_command}", embed=error_embed
             )
         else:
             await interaction.followup.send(
-                content=f'{interaction.user.mention}\n### Generation done:\n{gen_command}',
+                content=f"{interaction.user.mention}\n### Generation done:\n{gen_command}",
                 file=discord.File(
                     io.BytesIO(info), filename=str(self.generate_config) + ".png"
                 ),

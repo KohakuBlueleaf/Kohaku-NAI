@@ -103,7 +103,10 @@ def settings_ui():
                 ["remote", "local"], value=client_config["mode"], label="Mode"
             )
             backend = gr.Radio(
-                ["curl_cffi", "httpx"], value=client_config.get("backend", "curl_cffi"), label="Http Backend", info="use \"httpx\" if you met issues with \"curl_cffi\""
+                ["curl_cffi", "httpx"],
+                value=client_config.get("backend", "curl_cffi"),
+                label="Http Backend",
+                info='use "httpx" if you met issues with "curl_cffi"',
             )
             with gr.Column(visible=client_config["mode"] == "remote") as remote_blk:
                 end_point = gr.Textbox(client_config["end_point"], label="End Point")
