@@ -1,9 +1,11 @@
-import click
-from enum import Enum
-from loguru import logger
-from request import GenerateRequest
 import asyncio
+from enum import Enum
+
+import click
 import httpx
+from loguru import logger
+
+from .request import GenerateRequest
 
 
 class AspectRatio(str, Enum):

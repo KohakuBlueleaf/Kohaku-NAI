@@ -1,6 +1,8 @@
+import os 
 from subprocess import Popen
 from json import load, dumps
 
+print(os.getcwd())
 
 with open("./dc-bot-config.json", "r", encoding="utf-8") as f:
     bots_config = load(f)

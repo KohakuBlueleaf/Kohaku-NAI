@@ -8,10 +8,9 @@ import json
 import gradio as gr
 import webview
 
-from utils import (
+from .utils import (
     remote_gen,
-    remote_login,
-    set_token,
+    set_client,
     generate_novelai_image,
     image_from_bytes,
 )
@@ -156,7 +155,7 @@ async def generate(
 
     if mode == "remote":
         if (pswd := end_point_pswd) or (pswd := client_config["end_point_pswd"]):
-            await remote_login(end_point, pswd)
+            await set_client("httpx", end_point, pswd)
         img, img_data = await remote_gen(
             end_point,
             prompt,
@@ -177,7 +176,7 @@ async def generate(
             extra_info_json,
         )
     elif mode == "local":
-        set_token(token)
+        await set_client("curl_cffi", token=token)
         img_data, _ = await generate_novelai_image(
             prompt,
             enable_quality_tags,

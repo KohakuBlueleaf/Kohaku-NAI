@@ -11,7 +11,7 @@ from .functions import *
 from .dc_views import NAIImageGen
 from . import config
 
-from utils import remote_login, remote_gen, DEFAULT_ARGS
+from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS
 
 
 def event_with_error(func):
@@ -116,7 +116,7 @@ class KohakuNai(dc_commands.Cog):
             content=f"### Generating with command:\n{gen_command}"
         )
         async with ctx.typing():
-            await remote_login(config.GEN_SERVER_URL, config.GEN_SERVER_PSWD)
+            await set_client("httpx", config.GEN_SERVER_URL, config.GEN_SERVER_PSWD)
             img, info = await remote_gen(
                 config.GEN_SERVER_URL,
                 extra_infos={"save_folder": "discord-bot"},

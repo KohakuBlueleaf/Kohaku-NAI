@@ -5,7 +5,7 @@ import json
 import time
 import random
 import click
-import uvicorn
+from uvicorn import Config, Server
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 from hashlib import sha3_256
@@ -16,15 +16,15 @@ from snowflake import SnowflakeGenerator
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.sessions import SessionMiddleware
 
-from utils import (
+from .utils import (
     generate_novelai_image,
     free_check,
-    set_token,
+    set_client,
     image_from_bytes,
     process_image,
 )
-from request import GenerateRequest
-from config_spec import GenServerConfig
+from .request import GenerateRequest
+from .config_spec import GenServerConfig
 
 id_gen = SnowflakeGenerator(1)
 
@@ -164,6 +164,21 @@ async def gen(context: GenerateRequest, request: Request):
     return Response(img_bytes, media_type=media_type)
 
 
+async def main(config: str):
+    global server_config, auth_configs, generate_semaphore
+    server_config = toml.load(config)["gen_server"]
+    auth_configs = server_config.get("auth", [])
+    status = await set_client("curl_cffi", token=server_config["token"])
+    assert status is not None
+    generate_semaphore = asyncio.Semaphore(server_config["max_jobs"])
+    server = Server(Config(
+        app=app,
+        host=server_config["host"],
+        port=server_config["port"],
+    ))
+    await server.serve()
+
+
 @click.command()
 @click.option(
     "-c",
@@ -172,14 +187,9 @@ async def gen(context: GenerateRequest, request: Request):
     help="Config file path",
     type=click.Path(exists=True),
 )
-def main(config: str):
-    global server_config, auth_configs, generate_semaphore
-    server_config = toml.load(config)["gen_server"]
-    auth_configs = server_config.get("auth", [])
-    set_token(server_config["token"])
-    generate_semaphore = asyncio.Semaphore(server_config["max_jobs"])
-    uvicorn.run(app, host=server_config["host"], port=server_config["port"])
+def runner(config: str):
+    asyncio.run(main(config))
 
 
 if __name__ == "__main__":
-    main()
+    runner()

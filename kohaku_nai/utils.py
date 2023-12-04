@@ -15,36 +15,49 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
+API_URL = "https://api.novelai.net"
+
+
 jwt_token = ""
-url = "https://api.novelai.net/ai/generate-image"
-global_session = AsyncSession(timeout=3600, impersonate="chrome110")
-global_client = AsyncClient(timeout=3600)
+global_client: AsyncClient|AsyncSession|None = None
 
 
-def set_token(token: str):
-    global jwt_token, global_session
-    if jwt_token == token:
-        return
-    jwt_token = token
-    global_session = AsyncSession(
-        timeout=3600,
-        headers={
-            "Authorization": f"Bearer {jwt_token}",
-            "Content-Type": "application/json",
-            "Origin": "https://novelai.net",
-            "Referer": "https://novelai.net/",
-        },
-        impersonate="chrome110",
-    )
-
-
-async def remote_login(end_point, password):
-    payload = {"password": password}
-    response = await global_client.post(f"{end_point}/login", params=payload)
-    if response.status_code == 200:
-        return response.json()["status"]
+async def set_client(
+    backend: str = "httpx",
+    remote_server: str = "",
+    password: str = "",
+    token: str = "",
+):
+    global global_client
+    assert backend in ["httpx", "curl_cffi"]
+    assert remote_server or token
+    if backend == "httpx":
+        client_class = AsyncClient
     else:
-        return None
+        client_class = AsyncSession
+    
+    if remote_server:
+        global_client = client_class(timeout=3600)
+        payload = {"password": password}
+        response = await global_client.post(f"{remote_server}/login", params=payload)
+        if response.status_code == 200:
+            return response.json()["status"]
+    else:
+        kwargs = {
+            "timeout": 3600,
+            "headers": {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "Origin": "https://novelai.net",
+                "Referer": "https://novelai.net/",
+            },
+        }
+        if backend == 'curl_cffi':
+            kwargs["impersonate"] = "chrome110"
+        global_client = client_class(**kwargs)
+        status = await global_client.get(f"{API_URL}/user/data")
+        if status.status_code == 200:
+            return status.json()
 
 
 QUALITY_TAGS = "best quality, amazing quality, very aesthetic, absurdres"
@@ -186,7 +199,7 @@ async def generate_novelai_image(
     }
 
     # Send the POST request
-    response = await global_session.post(url, json=payload)
+    response = await global_client.post(f'{API_URL}/ai/generate-image', json=payload)
 
     # Process the response
     if response.headers.get("Content-Type") == "application/x-zip-compressed":

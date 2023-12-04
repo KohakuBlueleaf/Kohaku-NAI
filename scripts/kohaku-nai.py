@@ -13,11 +13,10 @@ from modules import shared, scripts, script_callbacks, images, devices
 from modules.sd_samplers_common import images_tensor_to_samples
 from modules.processing import Processed, StableDiffusionProcessingTxt2Img
 
-from utils import (
+from kohaku_nai.utils import (
     remote_gen,
     generate_novelai_image,
-    set_token,
-    remote_login,
+    set_client,
     image_from_bytes,
 )
 
@@ -110,7 +109,8 @@ class KohakuNAIScript(scripts.Script):
         if shared.opts.knai_api_call == "Remote":
             login_status = loop.run_until_complete(
                 (
-                    remote_login(
+                    set_client(
+                        "httpx",
                         shared.opts.knai_remote_server.strip(),
                         shared.opts.knai_remote_server_pswd.strip(),
                     )
@@ -143,7 +143,9 @@ class KohakuNAIScript(scripts.Script):
             imgs = [img for img, _ in datas]
             img_datas = [img_data for _, img_data in datas]
         else:
-            set_token(shared.opts.knai_token)
+            set_client(
+                "curl_cffi", token=shared.opts.knai_token.strip()
+            )
             datas = loop.run_until_complete(
                 run_tasks([
                     generate_novelai_image(

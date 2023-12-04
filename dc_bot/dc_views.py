@@ -4,7 +4,7 @@ import discord
 
 from .functions import make_summary
 from . import config
-from utils import remote_login, remote_gen, DEFAULT_ARGS
+from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS
 
 
 class NAIImageGen(discord.ui.View):
@@ -114,7 +114,7 @@ class NAIImageGen(discord.ui.View):
             embed=None,
         )
         await interaction.response.defer(thinking=True)
-        await remote_login(config.GEN_SERVER_URL, config.GEN_SERVER_PSWD)
+        await set_client("httpx", config.GEN_SERVER_URL, config.GEN_SERVER_PSWD)
         img, info = await remote_gen(
             config.GEN_SERVER_URL,
             extra_infos={"save_folder": "discord-bot"},
