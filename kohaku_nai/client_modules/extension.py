@@ -24,6 +24,8 @@ def basedir():
 
 def load_extensions(path="./client_extensions"):
     global current_basedir
+    if not os.path.isdir(path):
+        return
 
     for folder in os.listdir(path):
         folder_path = os.path.join(path, folder)
