@@ -1,11 +1,15 @@
 [gen_server]
     host = "0.0.0.0"
     port = 7000
-    max_jobs = 2
+    max_jobs = 0
     min_delay = 1.0
     save_path = "./data"
     http_backend = "curl_cffi" # or "httpx"
-    token = ""
+    tokens = [
+        "1",
+        "2",
+        "3",
+    ]
     always_require_auth = false
     save_directly = false
     separate_metadata = false

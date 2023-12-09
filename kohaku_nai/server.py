@@ -19,9 +19,10 @@ from starlette.middleware.sessions import SessionMiddleware
 from kohaku_nai.utils import (
     generate_novelai_image,
     free_check,
-    set_client,
+    make_client,
     image_from_bytes,
     process_image,
+    HttpClient
 )
 from kohaku_nai.request import GenerateRequest
 from kohaku_nai.config_spec import GenServerConfig
@@ -30,6 +31,7 @@ id_gen = SnowflakeGenerator(1)
 
 server_config: None | GenServerConfig = None
 auth_configs: list[GenServerConfig] = []
+nai_clients: dict[str, 'NAILocalClient'] = {}
 prev_gen_time = time.time()
 
 app = FastAPI()
@@ -37,6 +39,39 @@ app.add_middleware(SessionMiddleware, secret_key=uuid4().hex)
 
 generate_semaphore: None | asyncio.Semaphore = None
 save_worker = ThreadPoolExecutor(16)
+
+
+class NAILocalClient:
+    def __init__(self, token, client: HttpClient):
+        self.token = token
+        self.client = client
+        self.lock = asyncio.Lock()
+
+    @classmethod
+    async def create(cls, token):
+        client, status = await make_client(
+            server_config.get("http_backend", "curl_cffi"), token=token
+        )
+        if status is None:
+            return None
+        return cls(token, client)
+
+    @property
+    def available(self):
+        return not self.lock.locked()
+
+    async def disable(self):
+        await self.lock.acquire()
+
+    async def enable(self):
+        self.lock.release()
+
+    async def __aenter__(self) -> HttpClient:
+        await self.lock.acquire()
+        return self.client
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self.enable()
 
 
 def save_img(save_path: str, sub_folder: str, image: bytes, json: str):
@@ -110,28 +145,40 @@ async def gen(context: GenerateRequest, request: Request):
     ):
         return Response(json.dumps({"status": "Config not allowed"}), 403)
 
-    async with generate_semaphore:
-        if prev_gen_time + server_config["min_delay"] > time.time():
-            await asyncio.sleep(server_config["min_delay"] + random.random() * 0.3)
-        prev_gen_time = time.time()
+    # Wait for available client, if none available, switch the control back to eventloop
+    while True:
+        for client in nai_clients.values():
+            if client.available:
+                break
+        else:
+            await asyncio.sleep(0)
+            continue
+        break
 
-        img_bytes, json_payload = await generate_novelai_image(
-            context.prompt,
-            False,
-            context.neg_prompt,
-            "",
-            context.seed,
-            context.scale,
-            context.width,
-            context.height,
-            context.steps,
-            context.sampler,
-            context.schedule,
-            context.smea,
-            context.dyn,
-            context.dyn_threshold,
-            context.cfg_rescale,
-        )
+    async with client as http_client:
+        async with generate_semaphore:
+            if prev_gen_time + server_config["min_delay"] > time.time():
+                await asyncio.sleep(server_config["min_delay"] + random.random() * 0.3)
+            prev_gen_time = time.time()
+
+            img_bytes, json_payload = await generate_novelai_image(
+                context.prompt,
+                False,
+                context.neg_prompt,
+                "",
+                context.seed,
+                context.scale,
+                context.width,
+                context.height,
+                context.steps,
+                context.sampler,
+                context.schedule,
+                context.smea,
+                context.dyn,
+                context.dyn_threshold,
+                context.cfg_rescale,
+                client=http_client,
+            )
 
     if not isinstance(img_bytes, bytes):
         error_mes = img_bytes
@@ -165,14 +212,22 @@ async def gen(context: GenerateRequest, request: Request):
 
 
 async def main(config: str):
-    global server_config, auth_configs, generate_semaphore
+    global server_config, auth_configs, generate_semaphore, nai_clients
     server_config = toml.load(config)["gen_server"]
     auth_configs = server_config.get("auth", [])
-    status = await set_client(
-        server_config.get("http_backend", "curl_cffi"), token=server_config["token"]
-    )
-    assert status is not None
-    generate_semaphore = asyncio.Semaphore(server_config["max_jobs"])
+    tokens = server_config.get("tokens", [])
+    token = server_config.get("token", None)
+    if token:
+        tokens.append(token)
+    if tokens:
+        for token in tokens:
+            client = await NAILocalClient.create(token)
+            if client is None:
+                print(f"Failed to create client for {token}")
+            nai_clients[token] = client
+    else:
+        raise ValueError("No token provided, please set 'tokens' in config.toml")
+    generate_semaphore = asyncio.Semaphore(server_config.get("max_jobs", 0) or len(nai_clients))
     server = Server(
         Config(
             app=app,

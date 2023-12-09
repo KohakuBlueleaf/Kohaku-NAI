@@ -16,19 +16,18 @@ if sys.platform == "win32":
 
 
 API_URL = "https://api.novelai.net"
-
+HttpClient = AsyncClient | AsyncSession
 
 jwt_token = ""
-global_client: AsyncClient | AsyncSession | None = None
+global_client: HttpClient | None = None
 
 
-async def set_client(
+async def make_client(
     backend: str = "httpx",
     remote_server: str = "",
     password: str = "",
     token: str = "",
 ):
-    global global_client
     assert backend in ["httpx", "curl_cffi"]
     assert remote_server or token
     if backend == "httpx":
@@ -37,11 +36,11 @@ async def set_client(
         client_class = AsyncSession
 
     if remote_server:
-        global_client = client_class(timeout=3600)
+        client = client_class(timeout=3600)
         payload = {"password": password}
-        response = await global_client.post(f"{remote_server}/login", params=payload)
+        response = await client.post(f"{remote_server}/login", params=payload)
         if response.status_code == 200:
-            return response.json()["status"]
+            return client, response.json()["status"]
     else:
         kwargs = {
             "timeout": 3600,
@@ -54,10 +53,24 @@ async def set_client(
         }
         if backend == "curl_cffi":
             kwargs["impersonate"] = "chrome110"
-        global_client = client_class(**kwargs)
-        status = await global_client.get(f"{API_URL}/user/data")
+        client = client_class(**kwargs)
+        status = await client.get(f"{API_URL}/user/data")
         if status.status_code == 200:
-            return status.json()
+            return client, status.json()
+    return None, None
+
+
+async def set_client(
+    backend: str = "httpx",
+    remote_server: str = "",
+    password: str = "",
+    token: str = "",
+):
+    global global_client
+    global_client, status = await make_client(
+        backend, remote_server, password, token
+    )
+    return status
 
 
 QUALITY_TAGS = "best quality, amazing quality, very aesthetic, absurdres"
@@ -161,7 +174,10 @@ async def generate_novelai_image(
     dyn=False,
     dyn_threshold=False,
     cfg_rescale=0,
+    client: HttpClient|None = None,
 ):
+    if client is None:
+        client = global_client
     # Assign a random seed if seed is -1
     if seed == -1:
         seed = random.randint(0, 2**32 - 1)
@@ -199,7 +215,7 @@ async def generate_novelai_image(
     }
 
     # Send the POST request
-    response = await global_client.post(f"{API_URL}/ai/generate-image", json=payload)
+    response = await client.post(f"{API_URL}/ai/generate-image", json=payload)
 
     # Process the response
     if response.headers.get("Content-Type") == "application/x-zip-compressed":

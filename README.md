@@ -1,4 +1,5 @@
 # Kohaku-NAI
+
 A simple Novel-AI client with some utilities built in it.
 
 Also a stable-diffusion-webui extension.
@@ -6,21 +7,29 @@ Also a stable-diffusion-webui extension.
 **Sharing your account to your friends may violate the NAI's TOS. USE AT YOUR OWN RISK!!!**
 
 ### Demo for standalone client and SD-WebUI extension
-|![image](https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/e7e853d3-cbe1-4082-8cf6-b395648f342b)|![image](https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/3ce65dff-68a7-4122-bec9-58c6bd4ade01)|
-| --- | ---|
+
+| ![image](https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/e7e853d3-cbe1-4082-8cf6-b395648f342b) | ![image](https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/3ce65dff-68a7-4122-bec9-58c6bd4ade01) |
+| --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 
 ### Demo for DC bot
+
 https://github.com/KohakuBlueleaf/Kohaku-NAI/assets/59680068/3da2eca2-edc0-4caa-9d55-c68e563b9be8
 
-
 ## Features
-* Generation Server for managing manual rate limit and saving the images automatically.
+
+* Generation Server with followed features.
+  * saving images automatically
+  * account pool
+  * minimum delay between requests
+  * request rate limit
+  * Auth system
 * Standalone Client which can connect to NAI directly or connect to the generation server.
 * DC bot based on gen server.
 
 ## Usage
 
 ### sd-webui
+
 You can treat this repo as a [a1111 sd-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) extensions.
 Just put the repo url into `Extensions > Install from URL > URL for extension's git repository` and then click Install button.
 
@@ -33,6 +42,7 @@ Put your token (or generation server's url) into settings, save them. And then c
 ---
 
 ### Setup for standalone usage or gen-server or cli or dc bot
+
 ```
 git clone https://github.com/KohakuBlueleaf/Kohaku-NAI.git
 cd Kohaku-NAI
@@ -40,9 +50,11 @@ python -m venv venv
 ./venv/Scripts/activate
 python -m pip install -r ./requirements.txt
 ```
+
 ---
 
 ### Standalone Gradio Client
+
 If you just want to use it as a standalone client.
 Just change the `mode` of the client section in the `config.toml` to `local` and put your NovelAI API token to `token`.
 
@@ -54,11 +66,13 @@ And then use `python -m kohaku_nai.gr_client` to run it.
 ---
 
 ### Standalone Client
+
 `python -m kohaku_nai.cli_client --help` for more informations.
 
 ---
 
 ### Generation Server
+
 Put your NAI token into `token` in the server section in the `config.toml`.
 
 use `python -m kohaku_nai.server` to run it.
@@ -66,31 +80,35 @@ use `python -m kohaku_nai.server` to run it.
 ---
 
 ### DC bot
+
 Check the example `dc-bot-config.json`. Change the token/prefix to your bot's. And the `url` and `passowrd` are for your gen-server.
 
 And then run:
+
 ```
 python -m kohaku_nai.dc_bot
 ```
 
 ---
 
-
 ## Future Plan
-* Client
-    - [ ] Better Client (maybe static website implemented in Vue)
-    - [x] sd-webui extensions
-    - [x] Discord bot
-    - [x] CLI
-* Utils
-    - [ ] Random Prompts
-    - [x] Wildcard [built-in extensions]
-    - [ ] auto gen
-* API
-    - [ ] Fetch Account info (if possible?)
 
+* Server
+  * [ ] QoS system (Should have dedicated QoS on dc bot side and give dc bot white list)
+* Client
+  - [ ] Better Client (maybe static website implemented in Vue)
+  - [X] sd-webui extensions
+  - [X] Discord bot
+  - [X] CLI
+* Utils
+  - [ ] Random Prompts
+  - [X] Wildcard [built-in extensions]
+  - [ ] auto gen
+* API
+  - [ ] Fetch Account info (if possible?)
 
 ## Disclaimer
+
 The Kohaku-NAI project, including its standalone gradio client, CLI client, gen server and stable-diffusion-webui extension for using NovelAI api conveniently, is provided "as is" without warranty of any kind, either expressed or implied. While every effort has been made to ensure the functionality and reliability of the software, the creators of Kohaku-NAI do not guarantee its absolute safety, efficiency, or compatibility with all systems.
 
 Users should be aware that the use of Kohaku-NAI involves certain risks, including but not limited to:
