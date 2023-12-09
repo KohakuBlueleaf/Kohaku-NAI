@@ -63,7 +63,7 @@ class NAILocalClient:
     async def disable(self):
         await self.lock.acquire()
 
-    async def enable(self):
+    def enable(self):
         self.lock.release()
 
     async def __aenter__(self) -> HttpClient:
