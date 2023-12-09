@@ -145,7 +145,7 @@ class KohakuNAIScript(scripts.Script):
             imgs = [img for img, _ in datas]
             img_datas = [img_data for _, img_data in datas]
         else:
-            set_client("curl_cffi", token=shared.opts.knai_token.strip())
+            set_client(shared.opts.knai_http_backend, token=shared.opts.knai_token.strip())
             datas = loop.run_until_complete(
                 run_tasks(
                     [
@@ -252,6 +252,16 @@ def on_ui_settings():
             {"choices": ["Remote", "Local"]},
             section=section,
         ).info("Call NAI api directly from client or use generation server"),
+    )
+    shared.opts.add_option(
+        "knai_http_backend",
+        shared.OptionInfo(
+            "httpx",
+            "HTTP backend",
+            gr.Radio,
+            {"choices": ["httpx", "curl_cffi"]},
+            section=section,
+        ).info("Call NAI api via httpx or curl_cffi"),
     )
     shared.opts.add_option(
         "knai_token", shared.OptionInfo("", "Token for local call", section=section)
