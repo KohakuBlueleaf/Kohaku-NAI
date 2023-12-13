@@ -17,7 +17,7 @@ from kohaku_nai.utils import (
 from kohaku_nai.client_modules import extension
 
 
-client_config: dict = toml.load("config-test.toml")["client"]
+client_config: dict = toml.load("config.toml")["client"]
 extra_infos = client_config.get("remote_extra_infos", {})
 
 
