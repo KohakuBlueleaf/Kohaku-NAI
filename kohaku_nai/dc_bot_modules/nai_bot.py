@@ -1,4 +1,3 @@
-import shlex
 import io
 from traceback import format_exc
 
@@ -7,10 +6,10 @@ import discord.ext.commands as dc_commands
 from discord import app_commands
 from discord.ext.commands import CommandNotFound, Context
 
-from kohaku_nai.dc_bot_modules.functions import *
-from kohaku_nai.dc_bot_modules.dc_views import NAIImageGen
+from kohaku_nai.args_creator import CAPITAL_ARGS_MAPPING, parse_args
 from kohaku_nai.dc_bot_modules import config
-
+from kohaku_nai.dc_bot_modules.dc_views import NAIImageGen
+from kohaku_nai.dc_bot_modules.functions import *
 from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS
 
 
@@ -24,26 +23,6 @@ def event_with_error(func):
 
     function.__name__ = func.__name__
     return function
-
-
-def parse_args(message):
-    opts = shlex.split(message)
-    args = []
-    kwargs = {}
-    skip_next = False
-    for k, v in zip(opts, opts[1:] + ["--"]):
-        if skip_next:
-            skip_next = False
-            continue
-        if k.startswith("-"):
-            if v.startswith("-"):
-                kwargs[k.strip("-")] = True
-            else:
-                kwargs[k.strip("-")] = v
-                skip_next = True
-        else:
-            args.append(k)
-    return args, kwargs
 
 
 class KohakuNai(dc_commands.Cog):
@@ -102,11 +81,11 @@ class KohakuNai(dc_commands.Cog):
             return
 
         if (
-            width % 64
-            or height % 64
-            or width * height > 1024 * 1024
-            or steps > 28
-            or scale < 0
+                width % 64
+                or height % 64
+                or width * height > 1024 * 1024
+                or steps > 28
+                or scale < 0
         ):
             await ctx.reply("Your input is invalid")
             return
@@ -146,22 +125,22 @@ class KohakuNai(dc_commands.Cog):
 
     @app_commands.command(name="nai", description="Use Novel AI to generate Images")
     async def nai(
-        self,
-        interaction: discord.Interaction,
-        prompt: str,
-        negative_prompt: str = "",
-        width: int = 1024,
-        height: int = 1024,
-        steps: int = 28,
-        cfg_scale: float = 5.0,
-        seed: int = -1,
+            self,
+            interaction: discord.Interaction,
+            prompt: str,
+            negative_prompt: str = "",
+            width: int = 1024,
+            height: int = 1024,
+            steps: int = 28,
+            cfg_scale: float = 5.0,
+            seed: int = -1,
     ):
         if (
-            width % 64
-            or height % 64
-            or width * height > 1024 * 1024
-            or steps > 28
-            or cfg_scale < 0
+                width % 64
+                or height % 64
+                or width * height > 1024 * 1024
+                or steps > 28
+                or cfg_scale < 0
         ):
             await interaction.response.send_message(
                 "Your input is invalid", ephemeral=True
