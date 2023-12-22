@@ -11,7 +11,8 @@ from telebot import util, formatting
 from telebot.async_telebot import AsyncTeleBot
 from telebot.asyncio_storage import StateMemoryStorage
 
-from kohaku_nai.args_creator import CAPITAL_ARGS_MAPPING, parse_args
+from kohaku_nai.args_creator import CAPITAL_ARGS_MAPPING
+from kohaku_nai.tg_bot_modules.command import DrawCommand
 from kohaku_nai.tg_bot_modules.config import TgBotSettings
 from kohaku_nai.tg_bot_modules.functions import parse_command
 from kohaku_nai.utils import DEFAULT_ARGS, set_client, remote_gen
@@ -62,17 +63,29 @@ class BotRunner(object):
                     message,
                     "🥕 Input something to draw!"
                 )
+            if body.find(" -") != -1:
+                # 将 - 之前的内容用括号包裹
+                flag = body[body.find(" -"):]
+                body = body[:body.find(" -")]
+                body = f"'{body}'{flag}"
+                message_text = f"/draw {body}"
+            else:
+                message_text = f"/draw '{body}'"
+            parsed = DrawCommand.parse(message_text)
+            if not parsed.matched:
+                return await bot.reply_to(
+                    message,
+                    parsed.error_info
+                )
             # 解析参数
             default_args = dict(DEFAULT_ARGS.items())
-            args, kwargs = parse_args(body)
+            kwargs = parsed.all_matched_args
             for k in list(kwargs):
                 if k in CAPITAL_ARGS_MAPPING:
                     kwargs[CAPITAL_ARGS_MAPPING[k]] = kwargs.pop(k)
             for k in list(default_args):
                 if k in kwargs:
                     default_args[k] = kwargs[k]
-                elif args:
-                    default_args[k] = args.pop(0)
             try:
                 width = int(default_args["width"])
                 height = int(default_args["height"])
