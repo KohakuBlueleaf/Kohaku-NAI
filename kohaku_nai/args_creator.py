@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2023/12/23 上午12:10
-# @Author  : sudoskys
-# @File    : args_creator.py
-# @Software: PyCharm
 import shlex
 
 CAPITAL_ARGS_MAPPING = {

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2023/12/22 下午11:48
-# @Author  : sudoskys
-# @File    : functions.py
-# @Software: PyCharm
+
 def parse_command(command):
     if not command:
         return None, None

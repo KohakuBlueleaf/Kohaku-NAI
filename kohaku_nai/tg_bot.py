@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2023/12/22 下午11:19
-# @Author  : sudoskys
-# @File    : tg_bot.py
-# @Software: PyCharm
 import asyncio
 import pathlib
 from json import load

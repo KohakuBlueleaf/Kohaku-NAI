@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2023/12/22 下午11:28
-# @Author  : sudoskys
-# @File    : controller.py
-# @Software: PyCharm
+
 import io
 
 from loguru import logger

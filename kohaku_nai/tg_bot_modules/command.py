@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2023/11/18 上午1:56
-# @Author  : sudoskys
-# @File    : command.py
-# @Software: PyCharm
+
 from typing import Annotated
 
 from arclet.alconna import Alconna, Args, Option, CommandMeta
