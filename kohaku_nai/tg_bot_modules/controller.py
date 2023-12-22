@@ -123,4 +123,4 @@ class BotRunner(object):
                     parse_mode="MarkdownV2"
                 )
 
-        bot.polling(non_stop=True, allowed_updates=util.update_types, skip_pending=True)
+        return bot.polling(non_stop=True, allowed_updates=util.update_types, skip_pending=True)

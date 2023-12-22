@@ -7,7 +7,7 @@ from json import load
 from loguru import logger
 
 from kohaku_nai.tg_bot_modules.config import TgBotSettings
-from tg_bot_modules.controller import BotRunner
+from kohaku_nai.tg_bot_modules.controller import BotRunner
 
 CONFIG_FILE = pathlib.Path("tg-bot-config.json")
 if not CONFIG_FILE.exists():
