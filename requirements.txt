@@ -12,3 +12,5 @@ pydantic
 piexif
 loguru
 pywebview
+pytelegrambotapi
+arclet-alconna
