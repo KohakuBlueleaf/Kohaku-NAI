@@ -12,3 +12,4 @@ pydantic
 piexif
 loguru
 pywebview
+pytelegrambotapi

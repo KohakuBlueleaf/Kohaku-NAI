@@ -1,0 +1,6 @@
+{
+  "token": "YOUR TOKEN",
+  "url": "http://127.0.0.1:7000",
+  "proxy": null,
+  "password": "123456"
+}
