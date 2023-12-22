@@ -19,7 +19,7 @@ StepCache = StateMemoryStorage()
 
 class BotRunner(object):
 
-    def run(self, setting: TgBotSettings):
+    async def run(self, setting: TgBotSettings):
         logger.info("Bot Start")
         bot = AsyncTeleBot(setting.token, state_storage=StepCache)
         if setting.proxy:
@@ -123,4 +123,4 @@ class BotRunner(object):
                     parse_mode="MarkdownV2"
                 )
 
-        return bot.polling(non_stop=True, allowed_updates=util.update_types, skip_pending=True)
+        await bot.polling(non_stop=True, allowed_updates=util.update_types, skip_pending=True)
