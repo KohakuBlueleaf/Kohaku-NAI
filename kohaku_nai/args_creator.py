@@ -15,11 +15,6 @@ ARGS_CAPITAL_MAPPING = {v: k for k, v in CAPITAL_ARGS_MAPPING.items()}
 
 
 def parse_args(message: str):
-    """
-    Parse arguments from message
-    :param message:  message content string
-    :return: args, kwargs
-    """
     opts = shlex.split(message)
     args = []
     kwargs = {}
