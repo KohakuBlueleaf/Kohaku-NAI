@@ -145,51 +145,58 @@ async def gen(context: GenerateRequest, request: Request):
     ):
         return Response(json.dumps({"status": "Config not allowed"}), 403)
 
-    # Wait for available client, if none available, switch the control back to eventloop
     while True:
-        for client in nai_clients.values():
-            if client.available:
-                break
-        else:
-            await asyncio.sleep(0)
-            continue
-        break
+        # Wait for available client, if none available, switch the control back to eventloop
+        while True:
+            for client in nai_clients.values():
+                if client.available:
+                    break
+            else:
+                await asyncio.sleep(0)
+                continue
+            break
 
-    async with client as http_client:
-        async with generate_semaphore:
-            if prev_gen_time + server_config["min_delay"] > time.time():
-                await asyncio.sleep(server_config["min_delay"] + random.random() * 0.3)
-            prev_gen_time = time.time()
+        async with client as http_client:
+            async with generate_semaphore:
+                if prev_gen_time + server_config["min_delay"] > time.time():
+                    await asyncio.sleep(server_config["min_delay"] + random.random() * 0.3)
+                prev_gen_time = time.time()
 
-            img_bytes, json_payload = await generate_novelai_image(
-                context.prompt,
-                False,
-                context.neg_prompt,
-                "",
-                context.seed,
-                context.scale,
-                context.width,
-                context.height,
-                context.steps,
-                context.sampler,
-                context.schedule,
-                context.smea,
-                context.dyn,
-                context.dyn_threshold,
-                context.cfg_rescale,
-                client=http_client,
+                img_bytes, json_payload = await generate_novelai_image(
+                    context.prompt,
+                    False,
+                    context.neg_prompt,
+                    "",
+                    context.seed,
+                    context.scale,
+                    context.width,
+                    context.height,
+                    context.steps,
+                    context.sampler,
+                    context.schedule,
+                    context.smea,
+                    context.dyn,
+                    context.dyn_threshold,
+                    context.cfg_rescale,
+                    client=http_client,
+                )
+
+        if not isinstance(img_bytes, bytes):
+            error_mes = img_bytes
+            response = json_payload
+            try:
+                error_response = response.json()
+                if 'statusCode' in error_response:
+                    status_code = error_response['statusCode']
+                    if status_code == 429:
+                        continue
+            except:
+                error_response = response.text
+            return Response(
+                json.dumps({"error-mes": error_mes, "status": error_response}), 500
             )
-
-    if not isinstance(img_bytes, bytes):
-        error_mes = img_bytes
-        response = json_payload
-        try:
-            error_response = response.json()
-        except:
-            error_response = response.text
-        return Response(
-            json.dumps({"error-mes": error_mes, "status": error_response}), 500
-        )
+        else:
+            break
 
     is_save_raw = server_config.get("save_directly", False)
     if not is_save_raw:
