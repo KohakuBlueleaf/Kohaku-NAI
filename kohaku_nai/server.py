@@ -189,13 +189,12 @@ async def gen(context: GenerateRequest, request: Request):
                 error_response = response.json()
                 if 'statusCode' in error_response:
                     status_code = error_response['statusCode']
-                    current_time = time.time()
                     retry_list = server_config.get("retry_status_code", [])
                     if status_code in server_config.get("retry_status_code", []):
                         retry_count += 1
                         if retry_count > server_config["max_retries"]:
                             return Response(
-                                json.dumps({"error-mes": error_mes, "status": error_response}), 408
+                                json.dumps({"error-mes": "Exceed max retries for NAI errors", "status": f"{status_code} error from NAI server"}), 500
                             )
                         if server_config["retry_delay"] >= 0:
                             await asyncio.sleep(server_config["retry_delay"])
