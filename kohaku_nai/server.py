@@ -33,7 +33,6 @@ server_config: None | GenServerConfig = None
 auth_configs: list[GenServerConfig] = []
 nai_clients: dict[str, 'NAILocalClient'] = {}
 prev_gen_time = time.time()
-start_time = time.time()
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=uuid4().hex)
@@ -119,7 +118,6 @@ async def login(password: str, request: Request):
 @app.post("/gen")
 async def gen(context: GenerateRequest, request: Request):
     global prev_gen_time
-    global start_time
 
     is_signed = request.session.get("signed", False)
     is_free_only = request.session.get("free_only", True)
@@ -147,7 +145,7 @@ async def gen(context: GenerateRequest, request: Request):
     ):
         return Response(json.dumps({"status": "Config not allowed"}), 403)
 
-    start_time = time.time()
+    retry_count = 0
     while True:
         # Wait for available client, if none available, switch the control back to eventloop
         while True:
@@ -192,21 +190,22 @@ async def gen(context: GenerateRequest, request: Request):
                 if 'statusCode' in error_response:
                     status_code = error_response['statusCode']
                     current_time = time.time()
-                    if current_time - start_time > server_config["reconnect_time_limit"]:
-                        start_time = time.time()
-                        return Response(
-                            json.dumps({"error-mes": error_mes, "status": error_response}), 408
-                        )
-                    if status_code == 429 and server_config["reconnect_on_429_only"] or (not server_config["reconnect_on_429_only"]):
+                    retry_list = server_config.get("retry_status_code", [])
+                    if status_code in server_config.get("retry_status_code", []):
+                        retry_count += 1
+                        if retry_count > server_config["max_retry_times"]:
+                            return Response(
+                                json.dumps({"error-mes": error_mes, "status": error_response}), 408
+                            )
+                        if server_config["retry_delay"] > 0:
+                            await asyncio.sleep(server_config["retry_delay"])
                         continue
             except:
                 error_response = response.text
-            start_time = time.time()
             return Response(
                 json.dumps({"error-mes": error_mes, "status": error_response}), 500
             )
         else:
-            start_time = time.time()
             break
 
     is_save_raw = server_config.get("save_directly", False)

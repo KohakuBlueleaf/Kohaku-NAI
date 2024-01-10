@@ -15,8 +15,12 @@
     separate_metadata = false
     compression_quality = 75
     compression_method = 6
-    reconnect_time_limit = 60
-    reconnect_on_429_only = false
+    max_retry_times = 20
+    retry_delay = 5.0
+    retry_status_code = [
+        429,
+        500,
+    ]
     
     [[gen_server.auth]]
         password = "123456"
