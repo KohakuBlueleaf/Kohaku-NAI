@@ -193,11 +193,11 @@ async def gen(context: GenerateRequest, request: Request):
                     retry_list = server_config.get("retry_status_code", [])
                     if status_code in server_config.get("retry_status_code", []):
                         retry_count += 1
-                        if retry_count > server_config["max_retry_times"]:
+                        if retry_count > server_config["max_retries"]:
                             return Response(
                                 json.dumps({"error-mes": error_mes, "status": error_response}), 408
                             )
-                        if server_config["retry_delay"] > 0:
+                        if server_config["retry_delay"] >= 0:
                             await asyncio.sleep(server_config["retry_delay"])
                         continue
             except:

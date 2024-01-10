@@ -15,7 +15,7 @@
     separate_metadata = false
     compression_quality = 75
     compression_method = 6
-    max_retry_times = 20
+    max_retries = 20
     retry_delay = 5.0
     retry_status_code = [
         429,
