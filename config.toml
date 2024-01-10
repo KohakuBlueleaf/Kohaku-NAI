@@ -15,6 +15,8 @@
     separate_metadata = false
     compression_quality = 75
     compression_method = 6
+    reconnect_time_limit = 60
+    reconnect_on_429_only = false
     
     [[gen_server.auth]]
         password = "123456"
