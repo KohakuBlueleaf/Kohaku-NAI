@@ -1,13 +1,4 @@
-CAPITAL_ARGS_MAPPING = {
-    "H": "height",
-    "W": "width",
-    "P": "prompt",
-    "N": "negative_prompt",
-    "S": "seed",
-    "UC": "ucpreset",
-    "QU": "quality_tags",
-}
-ARGS_CAPITAL_MAPPING = {v: k for k, v in CAPITAL_ARGS_MAPPING.items()}
+from kohaku_nai.args_creator import ARGS_CAPITAL_MAPPING
 
 
 def make_summary(generate_config, prefix, default=None):

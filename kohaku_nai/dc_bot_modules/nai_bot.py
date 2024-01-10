@@ -7,6 +7,7 @@ import discord.ext.commands as dc_commands
 from discord import app_commands
 from discord.ext.commands import CommandNotFound, Context
 
+from kohaku_nai.args_creator import CAPITAL_ARGS_MAPPING, parse_args
 from kohaku_nai.dc_bot_modules.functions import *
 from kohaku_nai.dc_bot_modules.dc_views import NAIImageGen
 from kohaku_nai.dc_bot_modules import config
@@ -24,26 +25,6 @@ def event_with_error(func):
 
     function.__name__ = func.__name__
     return function
-
-
-def parse_args(message):
-    opts = shlex.split(message)
-    args = []
-    kwargs = {}
-    skip_next = False
-    for k, v in zip(opts, opts[1:] + ["--"]):
-        if skip_next:
-            skip_next = False
-            continue
-        if k.startswith("-"):
-            if v.startswith("-"):
-                kwargs[k.strip("-")] = True
-            else:
-                kwargs[k.strip("-")] = v
-                skip_next = True
-        else:
-            args.append(k)
-    return args, kwargs
 
 
 class KohakuNai(dc_commands.Cog):

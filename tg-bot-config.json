@@ -1,0 +1,6 @@
+{
+  "token": "YOUR BOT TOKEN",
+  "proxy": null,
+  "url": "http://127.0.0.1:7000",
+  "password": "123456"
+}
