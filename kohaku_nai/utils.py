@@ -119,6 +119,7 @@ async def remote_gen(
     dyn_threshold=False,
     cfg_rescale=0,
     extra_infos={},
+    **kwargs,
 ):
     payload = {
         "prompt": f"{prompt}, {QUALITY_TAGS}" if quality_tags else prompt,
@@ -174,6 +175,7 @@ async def generate_novelai_image(
     dyn_threshold=False,
     cfg_rescale=0,
     client: HttpClient | None = None,
+    **kwargs
 ):
     if client is None:
         client = global_client
