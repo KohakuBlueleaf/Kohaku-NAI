@@ -1,4 +1,5 @@
 import io
+from traceback import format_exc
 
 import discord
 
@@ -112,7 +113,7 @@ class NAIImageGen(discord.ui.View):
         try:
             gen_command = make_summary(self.generate_config, self.prefix, DEFAULT_ARGS)
             await self.origin.edit_original_response(
-                content=f"### Generating with command:\nImages: (0/{len(self.images)})\n{gen_command}",
+                content=f"### Generating with command:\nImages: (0/{self.images})\n{gen_command}",
                 view=None,
                 embed=None,
             )
