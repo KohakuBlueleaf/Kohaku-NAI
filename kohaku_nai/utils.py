@@ -97,6 +97,7 @@ DEFAULT_ARGS = {
     "dyn": False,
     "dyn_threshold": False,
     "cfg_rescale": 0,
+    "images": 1,
 }
 
 

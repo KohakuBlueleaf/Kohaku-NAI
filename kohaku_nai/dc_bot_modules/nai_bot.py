@@ -78,6 +78,7 @@ class KohakuNai(dc_commands.Cog):
             height = int(default_args["height"])
             steps = int(default_args["steps"])
             scale = float(default_args["scale"])
+            images = int(default_args["images"])
         except:
             await ctx.reply("Your input is invalid")
             return
@@ -88,42 +89,61 @@ class KohakuNai(dc_commands.Cog):
             or width * height > 1024 * 1024
             or steps > 28
             or scale < 0
+            or images > 4
+            or images < 1
         ):
             await ctx.reply("Your input is invalid")
             return
 
         gen_command = make_summary(default_args, self.prefix, DEFAULT_ARGS)
         gen_message = await ctx.reply(
-            content=f"### Generating with command:\n{gen_command}"
+            content=f"### Generating with command:\nimages: (0/{images})\n{gen_command}"
         )
         async with ctx.typing():
             await set_client("httpx", config.GEN_SERVER_URL, config.GEN_SERVER_PSWD)
-            img, info = await remote_gen(
-                config.GEN_SERVER_URL,
-                extra_infos={"save_folder": "discord-bot"},
-                **default_args,
-            )
-            if img is None:
+            imgs, infos = [], []
+            for i in range(images):
+                img, info = await remote_gen(
+                    config.GEN_SERVER_URL,
+                    extra_infos={"save_folder": "discord-bot"},
+                    **default_args,
+                )
+                imgs.append(img)
+                infos.append(info)
+                gen_message.edit(
+                    content=f"### Generating with command:\nimages: ({i+1}/{images})\n{gen_command}"
+                )
+
+            if any(img is None for img in imgs):
                 error_embed = discord.Embed(
                     title="Error", description="Failed to generate image"
                 )
-                if isinstance(info, dict):
-                    for k, v in info.items():
-                        error_embed.add_field(name=k, value=v)
-                else:
-                    error_embed.add_field(name="info", value=str(info))
-                await gen_message.edit(
+                for info, img in zip(infos, imgs):
+                    if img is not None:
+                        continue
+                    if isinstance(info, dict):
+                        for k, v in info.items():
+                            error_embed.add_field(name=k, value=v)
+                    else:
+                        error_embed.add_field(name="info", value=str(info))
+                await ctx.reply(
                     content=f"{ctx.author.mention}\nGeneration failed:",
                     embed=error_embed,
                 )
-            else:
-                await gen_message.delete()
+
+            if any(img is not None for img in imgs):
                 await ctx.reply(
                     content=f"{ctx.author.mention}\nGeneration done:",
-                    file=discord.File(
-                        io.BytesIO(info), filename=str(default_args) + ".png"
-                    ),
+                    files=[
+                        discord.File(
+                            io.BytesIO(info),
+                            filename=str(self.generate_config) + ".png",
+                        )
+                        for img, info in zip(imgs, infos)
+                        if img is not None
+                    ],
                 )
+            await gen_message.delete()
 
     @app_commands.command(name="nai", description="Use Novel AI to generate Images")
     async def nai(

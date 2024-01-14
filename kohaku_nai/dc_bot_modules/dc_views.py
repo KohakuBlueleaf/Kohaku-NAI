@@ -38,6 +38,7 @@ class NAIImageGen(discord.ui.View):
             "seed": seed,
             "sampler": "k_euler",
             "schedule": "native",
+            "images": images,
         }
 
     @discord.ui.select(
@@ -156,7 +157,8 @@ class NAIImageGen(discord.ui.View):
                     content=f"{interaction.user.mention}\n### Generation done:\n{gen_command}",
                     files=[
                         discord.File(
-                            io.BytesIO(info), filename=str(self.generate_config) + ".png"
+                            io.BytesIO(info),
+                            filename=str(self.generate_config) + ".png",
                         )
                         for img, info in zip(imgs, infos)
                         if img is not None
