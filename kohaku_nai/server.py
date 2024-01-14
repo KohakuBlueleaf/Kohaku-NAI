@@ -145,6 +145,7 @@ async def gen(context: GenerateRequest, request: Request):
     ):
         return Response(json.dumps({"status": "Config not allowed"}), 403)
 
+    retry_count = 0
     while True:
         # Wait for available client, if none available, switch the control back to eventloop
         while True:
@@ -188,7 +189,15 @@ async def gen(context: GenerateRequest, request: Request):
                 error_response = response.json()
                 if 'statusCode' in error_response:
                     status_code = error_response['statusCode']
-                    if status_code == 429:
+                    retry_list = server_config.get("retry_status_code", [])
+                    if status_code in server_config.get("retry_status_code", []):
+                        retry_count += 1
+                        if retry_count > server_config["max_retries"]:
+                            return Response(
+                                json.dumps({"error-mes": "Exceed max retries for NAI errors", "status": f"{status_code} error from NAI server"}), 500
+                            )
+                        if server_config["retry_delay"] >= 0:
+                            await asyncio.sleep(server_config["retry_delay"])
                         continue
             except:
                 error_response = response.text
