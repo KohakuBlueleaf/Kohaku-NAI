@@ -27,11 +27,13 @@ from kohaku_nai.utils import (
 from kohaku_nai.request import GenerateRequest
 from kohaku_nai.config_spec import GenServerConfig
 
+
 id_gen = SnowflakeGenerator(1)
 
 server_config: None | GenServerConfig = None
 auth_configs: list[GenServerConfig] = []
 nai_clients: dict[str, "NAILocalClient"] = {}
+retry_list: set[int] = set()
 prev_gen_time = time.time()
 
 app = FastAPI()
@@ -189,24 +191,24 @@ async def gen(context: GenerateRequest, request: Request):
             response = json_payload
             try:
                 error_response = response.json()
-                if "statusCode" in error_response:
-                    status_code = error_response["statusCode"]
-                    retry_list = server_config.get("retry_status_code", [])
-                    if status_code in server_config.get("retry_status_code", []):
-                        retry_count += 1
-                        if retry_count > server_config["max_retries"]:
-                            return Response(
-                                json.dumps(
-                                    {
-                                        "error-mes": "Exceed max retries for NAI errors",
-                                        "status": f"{status_code} error from NAI server",
-                                    }
-                                ),
-                                500,
-                            )
-                        if server_config["retry_delay"] >= 0:
-                            await asyncio.sleep(server_config["retry_delay"])
-                        continue
+                if (
+                    "statusCode" in error_response
+                    and (status_code := error_response["statusCode"]) in retry_list
+                ):
+                    retry_count += 1
+                    if retry_count > server_config["max_retries"]:
+                        return Response(
+                            json.dumps(
+                                {
+                                    "error-mes": "Exceed max retries for NAI errors",
+                                    "status": f"{status_code} error from NAI server",
+                                }
+                            ),
+                            500,
+                        )
+                    if server_config["retry_delay"] >= 0:
+                        await asyncio.sleep(server_config["retry_delay"])
+                    continue
             except:
                 error_response = response.text
             return Response(
@@ -236,11 +238,12 @@ async def gen(context: GenerateRequest, request: Request):
 
 
 async def main(config: str):
-    global server_config, auth_configs, generate_semaphore, nai_clients
+    global server_config, auth_configs, generate_semaphore, nai_clients, retry_list
     server_config = toml.load(config)["gen_server"]
     auth_configs = server_config.get("auth", [])
     tokens = server_config.get("tokens", [])
     token = server_config.get("token", None)
+    retry_list = set(server_config.get("retry_status_code", []))
     if token:
         tokens.append(token)
     if tokens:
