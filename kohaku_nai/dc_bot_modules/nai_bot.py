@@ -78,7 +78,7 @@ class KohakuNai(dc_commands.Cog):
             height = int(default_args["height"])
             steps = int(default_args["steps"])
             scale = float(default_args["scale"])
-            images = int(default_args["images"])
+            images = int(default_args.pop("images", 1))
         except:
             await ctx.reply("Your input is invalid")
             return
