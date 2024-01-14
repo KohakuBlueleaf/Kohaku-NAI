@@ -130,7 +130,7 @@ class NAIImageGen(discord.ui.View):
                 imgs.append(img)
                 infos.append(info)
                 await self.origin.edit_original_response(
-                    content=f"### Generating with command:\nImages: ({i+1}/{len(self.images)})\n{gen_command}",
+                    content=f"### Generating with command:\nImages: ({i+1}/{self.images})\n{gen_command}",
                     view=None,
                     embed=None,
                 )
