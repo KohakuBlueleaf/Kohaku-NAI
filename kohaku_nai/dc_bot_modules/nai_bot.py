@@ -110,7 +110,7 @@ class KohakuNai(dc_commands.Cog):
                 )
                 imgs.append(img)
                 infos.append(info)
-                gen_message.edit(
+                await gen_message.edit(
                     content=f"### Generating with command:\nimages: ({i+1}/{images})\n{gen_command}"
                 )
 
