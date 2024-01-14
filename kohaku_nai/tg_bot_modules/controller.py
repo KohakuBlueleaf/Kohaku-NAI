@@ -18,33 +18,36 @@ StepCache = StateMemoryStorage()
 
 
 class BotRunner(object):
-
     async def run(self, setting: TgBotSettings):
         logger.info("Bot Start")
         bot = AsyncTeleBot(setting.token, state_storage=StepCache)
         if setting.proxy:
             from telebot import asyncio_helper
+
             asyncio_helper.proxy = setting.proxy
             logger.info("Proxy tunnels are being used!")
 
-        @bot.message_handler(commands='help', chat_types=['private', 'supergroup', 'group'])
+        @bot.message_handler(
+            commands="help", chat_types=["private", "supergroup", "group"]
+        )
         async def listen_help_command(message: types.Message):
             _message = await bot.reply_to(
                 message,
                 text=formatting.format_text(
                     formatting.mbold("🥕 Help"),
-                    formatting.mitalic("draw [prompt] [-neg negative_prompt] [-s seed] [-st steps] "
-                                       "[-cfg cfg_rescale] [-sam sampler] [-wi width] [-he height]"
-                                       ),
+                    formatting.mitalic(
+                        "draw [prompt] [-neg negative_prompt] [-s seed] [-st steps] "
+                        "[-cfg cfg_rescale] [-sam sampler] [-wi width] [-he height]"
+                    ),
                     formatting.mbold("🥕 /draw"),
                 ),
-                parse_mode="MarkdownV2"
+                parse_mode="MarkdownV2",
             )
 
         @bot.message_handler(
-            commands='draw',
+            commands="draw",
             content_types=["text"],
-            chat_types=['group', 'supergroup', 'private']
+            chat_types=["group", "supergroup", "private"],
         )
         async def listen_draw_command(message: types.Message):
             """
@@ -56,24 +59,18 @@ class BotRunner(object):
             # 参数内容
             head, body = parse_command(message_text)
             if not body:
-                return await bot.reply_to(
-                    message,
-                    "🥕 Input something to draw!"
-                )
+                return await bot.reply_to(message, "🥕 Input something to draw!")
             if body.find(" -") != -1:
                 # 将 - 之前的内容用括号包裹
-                flag = body[body.find(" -"):]
-                body = body[:body.find(" -")]
+                flag = body[body.find(" -") :]
+                body = body[: body.find(" -")]
                 body = f"'{body}'{flag}"
                 message_text = f"/draw {body}"
             else:
                 message_text = f"/draw '{body}'"
             parsed = DrawCommand.parse(message_text)
             if not parsed.matched:
-                return await bot.reply_to(
-                    message,
-                    parsed.error_info
-                )
+                return await bot.reply_to(message, parsed.error_info)
             # 解析参数
             default_args = dict(DEFAULT_ARGS.items())
             kwargs = parsed.all_matched_args
@@ -92,11 +89,11 @@ class BotRunner(object):
                 return await bot.reply_to(message, "Your input is invalid")
 
             if (
-                    width % 64
-                    or height % 64
-                    or width * height > 1024 * 1024
-                    or steps > 28
-                    or scale < 0
+                width % 64
+                or height % 64
+                or width * height > 1024 * 1024
+                or steps > 28
+                or scale < 0
             ):
                 await bot.reply_to(message, "Your input is invalid")
                 return
@@ -120,7 +117,9 @@ class BotRunner(object):
                     document=(io.BytesIO(img), str(default_args) + ".png"),
                     caption=None,
                     reply_to_message_id=message.message_id,
-                    parse_mode="MarkdownV2"
+                    parse_mode="MarkdownV2",
                 )
 
-        await bot.polling(non_stop=True, allowed_updates=util.update_types, skip_pending=True)
+        await bot.polling(
+            non_stop=True, allowed_updates=util.update_types, skip_pending=True
+        )

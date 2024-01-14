@@ -67,9 +67,7 @@ async def set_client(
     token: str = "",
 ):
     global global_client
-    global_client, status = await make_client(
-        backend, remote_server, password, token
-    )
+    global_client, status = await make_client(backend, remote_server, password, token)
     return status
 
 
@@ -174,7 +172,7 @@ async def generate_novelai_image(
     dyn=False,
     dyn_threshold=False,
     cfg_rescale=0,
-    client: HttpClient|None = None,
+    client: HttpClient | None = None,
 ):
     if client is None:
         client = global_client

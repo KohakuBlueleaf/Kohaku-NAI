@@ -13,7 +13,14 @@ for config in bots_config["test_bots"]:
         p_list.append(Popen([bots_config["pyinstaller-script"], config_str]))
     else:
         p_list.append(
-            Popen([bots_config["python-script"], "-m", "kohaku_nai.dc_bot_modules.runner", config_str])
+            Popen(
+                [
+                    bots_config["python-script"],
+                    "-m",
+                    "kohaku_nai.dc_bot_modules.runner",
+                    config_str,
+                ]
+            )
         )
 
 

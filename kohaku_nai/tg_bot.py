@@ -27,9 +27,7 @@ setting = TgBotSettings(**config)
 
 
 async def main():
-    await asyncio.gather(
-        BotRunner().run(setting)
-    )
+    await asyncio.gather(BotRunner().run(setting))
 
 
 loop = asyncio.get_event_loop()
