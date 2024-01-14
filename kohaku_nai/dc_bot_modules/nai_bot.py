@@ -114,36 +114,36 @@ class KohakuNai(dc_commands.Cog):
                     content=f"### Generating with command:\nimages: ({i+1}/{images})\n{gen_command}"
                 )
 
-            if any(img is None for img in imgs):
-                error_embed = discord.Embed(
-                    title="Error", description="Failed to generate image"
-                )
-                for info, img in zip(infos, imgs):
-                    if img is not None:
-                        continue
-                    if isinstance(info, dict):
-                        for k, v in info.items():
-                            error_embed.add_field(name=k, value=v)
-                    else:
-                        error_embed.add_field(name="info", value=str(info))
-                await ctx.reply(
-                    content=f"{ctx.author.mention}\nGeneration failed:",
-                    embed=error_embed,
-                )
+        if any(img is None for img in imgs):
+            error_embed = discord.Embed(
+                title="Error", description="Failed to generate image"
+            )
+            for info, img in zip(infos, imgs):
+                if img is not None:
+                    continue
+                if isinstance(info, dict):
+                    for k, v in info.items():
+                        error_embed.add_field(name=k, value=v)
+                else:
+                    error_embed.add_field(name="info", value=str(info))
+            await ctx.reply(
+                content=f"{ctx.author.mention}\nGeneration failed:",
+                embed=error_embed,
+            )
 
-            if any(img is not None for img in imgs):
-                await ctx.reply(
-                    content=f"{ctx.author.mention}\nGeneration done:",
-                    files=[
-                        discord.File(
-                            io.BytesIO(info),
-                            filename=str(self.generate_config) + ".png",
-                        )
-                        for img, info in zip(imgs, infos)
-                        if img is not None
-                    ],
-                )
-            await gen_message.delete()
+        if any(img is not None for img in imgs):
+            await ctx.reply(
+                content=f"{ctx.author.mention}\nGeneration done:",
+                files=[
+                    discord.File(
+                        io.BytesIO(info),
+                        filename=str(self.generate_config) + ".png",
+                    )
+                    for img, info in zip(imgs, infos)
+                    if img is not None
+                ],
+            )
+        await gen_message.delete()
 
     @app_commands.command(name="nai", description="Use Novel AI to generate Images")
     async def nai(
