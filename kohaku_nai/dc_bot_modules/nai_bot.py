@@ -138,7 +138,7 @@ class KohakuNai(dc_commands.Cog):
                     files=[
                         discord.File(
                             io.BytesIO(info),
-                            filename=str(self.generate_config) + ".png",
+                            filename=str(default_args) + ".png",
                         )
                         for img, info in zip(imgs, infos)
                         if img is not None
