@@ -19,8 +19,10 @@ class NAIImageGen(discord.ui.View):
         steps,
         scale,
         seed,
+        images,
     ):
         super().__init__()
+        self.images = images
         self.origin = origin
         self.prefix = prefix
         self.generate_config = {
@@ -109,36 +111,56 @@ class NAIImageGen(discord.ui.View):
     ):
         gen_command = make_summary(self.generate_config, self.prefix, DEFAULT_ARGS)
         await self.origin.edit_original_response(
-            content=f"### Generating with command:\n{gen_command}",
+            content=f"### Generating with command:\nImages: (0/{len(self.images)})\n{gen_command}",
             view=None,
             embed=None,
         )
         await interaction.response.defer(thinking=True)
         await set_client("httpx", config.GEN_SERVER_URL, config.GEN_SERVER_PSWD)
-        img, info = await remote_gen(
-            config.GEN_SERVER_URL,
-            extra_infos={"save_folder": "discord-bot"},
-            **self.generate_config,
-        )
-        if img is None:
+
+        imgs, infos = [], []
+        for i in range(self.images):
+            img, info = await remote_gen(
+                config.GEN_SERVER_URL,
+                extra_infos={"save_folder": "discord-bot"},
+                **self.generate_config,
+            )
+            imgs.append(img)
+            infos.append(infos)
+            await self.origin.edit_original_response(
+                content=f"### Generating with command:\nImages: ({i+1}/{len(self.images)})\n{gen_command}",
+                view=None,
+                embed=None,
+            )
+
+        if any(img is None for img in imgs):
             error_embed = discord.Embed(
                 title="Error", description="Failed to generate image"
             )
-            if isinstance(info, dict):
-                for k, v in info.items():
-                    error_embed.add_field(name=k, value=v)
-            else:
-                error_embed.add_field(name="info", value=str(info))
+            for info, img in zip(infos, imgs):
+                if img is not None:
+                    continue
+                if isinstance(info, dict):
+                    for k, v in info.items():
+                        error_embed.add_field(name=k, value=v)
+                else:
+                    error_embed.add_field(name="info", value=str(info))
             await interaction.followup.send(
                 content=f"### Generation Failed:\n{gen_command}", embed=error_embed
             )
-        else:
+
+        if any(img is not None for img in imgs):
             await interaction.followup.send(
                 content=f"{interaction.user.mention}\n### Generation done:\n{gen_command}",
-                file=discord.File(
-                    io.BytesIO(info), filename=str(self.generate_config) + ".png"
-                ),
+                files=[
+                    discord.File(
+                        io.BytesIO(info), filename=str(self.generate_config) + ".png"
+                    )
+                    for img, info in zip(imgs, infos)
+                    if img is not None
+                ],
             )
+
         await self.origin.edit_original_response(
             content=f"### Generation done:\n{gen_command}"
         )

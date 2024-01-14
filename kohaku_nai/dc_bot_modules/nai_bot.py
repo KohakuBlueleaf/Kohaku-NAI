@@ -136,6 +136,7 @@ class KohakuNai(dc_commands.Cog):
         steps: int = 28,
         cfg_scale: float = 5.0,
         seed: int = -1,
+        images: int = 1,
     ):
         if (
             width % 64
@@ -143,6 +144,8 @@ class KohakuNai(dc_commands.Cog):
             or width * height > 1024 * 1024
             or steps > 28
             or cfg_scale < 0
+            or images > 4
+            or images < 1
         ):
             await interaction.response.send_message(
                 "Your input is invalid", ephemeral=True
@@ -155,6 +158,7 @@ class KohakuNai(dc_commands.Cog):
         embed.add_field(name="height", value=height, inline=False)
         embed.add_field(name="steps", value=steps, inline=False)
         embed.add_field(name="CFG scale", value=cfg_scale, inline=False)
+        embed.add_field(name="Num of image gen", value=images, inline=False)
         await interaction.response.send_message(
             embed=embed,
             view=NAIImageGen(
@@ -167,6 +171,7 @@ class KohakuNai(dc_commands.Cog):
                 steps=steps,
                 scale=cfg_scale,
                 seed=seed,
+                images=images,
             ),
             ephemeral=True,
         )
