@@ -219,7 +219,7 @@ async def gen(context: GenerateRequest, request: Request):
 
     is_save_raw = server_config.get("save_directly", False)
     if not is_save_raw:
-        img = image_from_bytes(img_bytes)
+        img_webp = image_from_bytes(img_bytes)
         quality = server_config.get("compression_quality", 75)
         method = server_config.get("compression_method", 4)
         assert 0 <= quality <= 100, "Compression quality must be in [0, 100]"
@@ -227,14 +227,18 @@ async def gen(context: GenerateRequest, request: Request):
         # https://exiftool.org/TagNames/EXIF.html
         # 0x9286 UserComment
         metadata = {"Exif": {0x9286: bytes(json_payload, "utf-8")}}
-        img_bytes = process_image(img, metadata, quality, method)
+        img_webp_bytes = process_image(img_webp, metadata, quality, method)
 
     await asyncio.get_running_loop().run_in_executor(
-        save_worker, save_img, save_path, safe_folder_name, img_bytes, json_payload
+        save_worker,
+        save_img,
+        save_path,
+        safe_folder_name,
+        img_bytes if is_save_raw else img_webp_bytes,
+        json_payload,
     )
-    media_type = "image/png" if is_save_raw else "image/webp"
 
-    return Response(img_bytes, media_type=media_type)
+    return Response(img_bytes, media_type="image/png")
 
 
 async def main(config: str):

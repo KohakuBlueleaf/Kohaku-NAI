@@ -175,7 +175,7 @@ async def generate_novelai_image(
     dyn_threshold=False,
     cfg_rescale=0,
     client: HttpClient | None = None,
-    **kwargs
+    **kwargs,
 ):
     if client is None:
         client = global_client
