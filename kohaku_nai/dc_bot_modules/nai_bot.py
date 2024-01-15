@@ -12,7 +12,7 @@ from kohaku_nai.dc_bot_modules.functions import *
 from kohaku_nai.dc_bot_modules.dc_views import NAIImageGen
 from kohaku_nai.dc_bot_modules import config
 
-from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS
+from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS, make_file_name
 
 
 def event_with_error(func):
@@ -138,7 +138,7 @@ class KohakuNai(dc_commands.Cog):
                     files=[
                         discord.File(
                             io.BytesIO(info),
-                            filename=str(default_args) + ".png",
+                            filename=make_file_name(default_args) + ".png",
                         )
                         for img, info in zip(imgs, infos)
                         if img is not None

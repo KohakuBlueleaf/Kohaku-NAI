@@ -5,6 +5,7 @@ import io
 import zipfile
 import json
 import piexif
+from typing import Any
 
 from PIL import Image
 from httpx import AsyncClient
@@ -99,6 +100,13 @@ DEFAULT_ARGS = {
     "cfg_rescale": 0,
     "images": 1,
 }
+
+
+def make_file_name(args: dict[str, Any]):
+    prompt = args.pop("prompt", "")[:20]
+    neg_prompt = args.pop("negative_prompt", "")[:20]
+    file_name = f"{prompt}_{neg_prompt}_" + "_".join([f"{k}={v}" for k, v in args.items()])
+    return file_name
 
 
 async def remote_gen(
