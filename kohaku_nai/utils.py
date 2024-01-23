@@ -5,6 +5,7 @@ import io
 import zipfile
 import json
 import piexif
+from typing import Any
 
 from PIL import Image
 from httpx import AsyncClient
@@ -67,9 +68,7 @@ async def set_client(
     token: str = "",
 ):
     global global_client
-    global_client, status = await make_client(
-        backend, remote_server, password, token
-    )
+    global_client, status = await make_client(backend, remote_server, password, token)
     return status
 
 
@@ -99,7 +98,15 @@ DEFAULT_ARGS = {
     "dyn": False,
     "dyn_threshold": False,
     "cfg_rescale": 0,
+    "images": 1,
 }
+
+
+def make_file_name(args: dict[str, Any]):
+    prompt = args.pop("prompt", "")[:20]
+    neg_prompt = args.pop("negative_prompt", "")[:20]
+    file_name = f"{prompt}_{neg_prompt}_" + "_".join([f"{k}={v}" for k, v in args.items()])
+    return file_name
 
 
 async def remote_gen(
@@ -120,6 +127,7 @@ async def remote_gen(
     dyn_threshold=False,
     cfg_rescale=0,
     extra_infos={},
+    **kwargs,
 ):
     payload = {
         "prompt": f"{prompt}, {QUALITY_TAGS}" if quality_tags else prompt,
@@ -174,7 +182,8 @@ async def generate_novelai_image(
     dyn=False,
     dyn_threshold=False,
     cfg_rescale=0,
-    client: HttpClient|None = None,
+    client: HttpClient | None = None,
+    **kwargs,
 ):
     if client is None:
         client = global_client

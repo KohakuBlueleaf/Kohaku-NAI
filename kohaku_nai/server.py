@@ -22,16 +22,18 @@ from kohaku_nai.utils import (
     make_client,
     image_from_bytes,
     process_image,
-    HttpClient
+    HttpClient,
 )
 from kohaku_nai.request import GenerateRequest
 from kohaku_nai.config_spec import GenServerConfig
+
 
 id_gen = SnowflakeGenerator(1)
 
 server_config: None | GenServerConfig = None
 auth_configs: list[GenServerConfig] = []
-nai_clients: dict[str, 'NAILocalClient'] = {}
+nai_clients: dict[str, "NAILocalClient"] = {}
+retry_list: set[int] = set()
 prev_gen_time = time.time()
 
 app = FastAPI()
@@ -145,55 +147,79 @@ async def gen(context: GenerateRequest, request: Request):
     ):
         return Response(json.dumps({"status": "Config not allowed"}), 403)
 
-    # Wait for available client, if none available, switch the control back to eventloop
+    retry_count = 0
     while True:
-        for client in nai_clients.values():
-            if client.available:
-                break
-        else:
-            await asyncio.sleep(0)
-            continue
-        break
+        # Wait for available client, if none available, switch the control back to eventloop
+        while True:
+            for client in nai_clients.values():
+                if client.available:
+                    break
+            else:
+                await asyncio.sleep(0)
+                continue
+            break
 
-    async with client as http_client:
-        async with generate_semaphore:
-            if prev_gen_time + server_config["min_delay"] > time.time():
-                await asyncio.sleep(server_config["min_delay"] + random.random() * 0.3)
-            prev_gen_time = time.time()
+        async with client as http_client:
+            async with generate_semaphore:
+                if prev_gen_time + server_config["min_delay"] > time.time():
+                    await asyncio.sleep(
+                        server_config["min_delay"] + random.random() * 0.3
+                    )
+                prev_gen_time = time.time()
 
-            img_bytes, json_payload = await generate_novelai_image(
-                context.prompt,
-                False,
-                context.neg_prompt,
-                "",
-                context.seed,
-                context.scale,
-                context.width,
-                context.height,
-                context.steps,
-                context.sampler,
-                context.schedule,
-                context.smea,
-                context.dyn,
-                context.dyn_threshold,
-                context.cfg_rescale,
-                client=http_client,
+                img_bytes, json_payload = await generate_novelai_image(
+                    context.prompt,
+                    False,
+                    context.neg_prompt,
+                    "",
+                    context.seed,
+                    context.scale,
+                    context.width,
+                    context.height,
+                    context.steps,
+                    context.sampler,
+                    context.schedule,
+                    context.smea,
+                    context.dyn,
+                    context.dyn_threshold,
+                    context.cfg_rescale,
+                    client=http_client,
+                )
+
+        if not isinstance(img_bytes, bytes):
+            error_mes = img_bytes
+            response = json_payload
+            try:
+                error_response = response.json()
+                if (
+                    "statusCode" in error_response
+                    and (status_code := error_response["statusCode"]) in retry_list
+                ):
+                    retry_count += 1
+                    if retry_count > server_config["max_retries"]:
+                        return Response(
+                            json.dumps(
+                                {
+                                    "error-mes": "Exceed max retries for NAI errors",
+                                    "status": f"{status_code} error from NAI server",
+                                }
+                            ),
+                            500,
+                        )
+                    if server_config["retry_delay"] >= 0:
+                        await asyncio.sleep(server_config["retry_delay"])
+                    continue
+            except:
+                error_response = response.text
+            return Response(
+                json.dumps({"error-mes": error_mes, "status": error_response}), 500
             )
-
-    if not isinstance(img_bytes, bytes):
-        error_mes = img_bytes
-        response = json_payload
-        try:
-            error_response = response.json()
-        except:
-            error_response = response.text
-        return Response(
-            json.dumps({"error-mes": error_mes, "status": error_response}), 500
-        )
+        else:
+            break
 
     is_save_raw = server_config.get("save_directly", False)
     if not is_save_raw:
-        img = image_from_bytes(img_bytes)
+        img_webp = image_from_bytes(img_bytes)
         quality = server_config.get("compression_quality", 75)
         method = server_config.get("compression_method", 4)
         assert 0 <= quality <= 100, "Compression quality must be in [0, 100]"
@@ -201,22 +227,27 @@ async def gen(context: GenerateRequest, request: Request):
         # https://exiftool.org/TagNames/EXIF.html
         # 0x9286 UserComment
         metadata = {"Exif": {0x9286: bytes(json_payload, "utf-8")}}
-        img_bytes = process_image(img, metadata, quality, method)
+        img_webp_bytes = process_image(img_webp, metadata, quality, method)
 
     await asyncio.get_running_loop().run_in_executor(
-        save_worker, save_img, save_path, safe_folder_name, img_bytes, json_payload
+        save_worker,
+        save_img,
+        save_path,
+        safe_folder_name,
+        img_bytes if is_save_raw else img_webp_bytes,
+        json_payload,
     )
-    media_type = "image/png" if is_save_raw else "image/webp"
 
-    return Response(img_bytes, media_type=media_type)
+    return Response(img_bytes, media_type="image/png")
 
 
 async def main(config: str):
-    global server_config, auth_configs, generate_semaphore, nai_clients
+    global server_config, auth_configs, generate_semaphore, nai_clients, retry_list
     server_config = toml.load(config)["gen_server"]
     auth_configs = server_config.get("auth", [])
     tokens = server_config.get("tokens", [])
     token = server_config.get("token", None)
+    retry_list = set(server_config.get("retry_status_code", []))
     if token:
         tokens.append(token)
     if tokens:
@@ -227,7 +258,9 @@ async def main(config: str):
             nai_clients[token] = client
     else:
         raise ValueError("No token provided, please set 'tokens' in config.toml")
-    generate_semaphore = asyncio.Semaphore(server_config.get("max_jobs", 0) or len(nai_clients))
+    generate_semaphore = asyncio.Semaphore(
+        server_config.get("max_jobs", 0) or len(nai_clients)
+    )
     server = Server(
         Config(
             app=app,

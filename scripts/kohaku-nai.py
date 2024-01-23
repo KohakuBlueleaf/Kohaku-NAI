@@ -146,7 +146,9 @@ class KohakuNAIScript(scripts.Script):
             img_datas = [img_data for _, img_data in datas]
         else:
             loop.run_until_complete(
-                set_client(shared.opts.knai_http_backend, token=shared.opts.knai_token.strip())
+                set_client(
+                    shared.opts.knai_http_backend, token=shared.opts.knai_token.strip()
+                )
             )
             datas = loop.run_until_complete(
                 run_tasks(
