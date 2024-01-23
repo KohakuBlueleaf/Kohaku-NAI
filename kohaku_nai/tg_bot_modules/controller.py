@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
-import io
-
+from io import BytesIO
 from loguru import logger
 from telebot import types
 from telebot import util, formatting
@@ -115,9 +113,12 @@ class BotRunner(object):
                 logger.exception(e)
                 return await bot.reply_to(message, "🥕 Generation failed")
             else:
+                bio = BytesIO()
+                img.save(bio, format="PNG")
+                bio.seek(0)
                 return await bot.send_document(
                     chat_id=message.chat.id,
-                    document=(io.BytesIO(img), str(default_args) + ".png"),
+                    document=(str(default_args) + ".png", bio),
                     caption=None,
                     reply_to_message_id=message.message_id,
                     parse_mode="MarkdownV2"
