@@ -155,16 +155,23 @@ async def gen(context: GenerateRequest, request: Request):
         while True:
             for client in nai_clients.values():
                 if not client.available:
+                    # Not available
                     continue
                 elif not client.in_error:
+                    # available + no error
                     break
                 elif time.time() >= client.error_time + server_config["retry_delay"]:
+                    # available + in error + retry delay passed
                     client.in_error = False
                     break
                 else:
+                    # in error + retry delay not passed
+                    # Use asyncio.sleep to yield control to the event loop
                     await asyncio.sleep(0)
                     continue
             else:
+                # No client available
+                # Use asyncio.sleep to yield control to the event loop
                 await asyncio.sleep(0)
                 continue
             break
@@ -195,8 +202,13 @@ async def gen(context: GenerateRequest, request: Request):
                     context.cfg_rescale,
                     client=http_client,
                 )
+            error = not isinstance(img_bytes, bytes)
+            if error:
+                # Apply error status to client before we release it
+                client.in_error = True
+                client.error_time = time.time()
 
-        if not isinstance(img_bytes, bytes):
+        if error:
             error_mes = img_bytes
             response = json_payload
             try:
@@ -219,8 +231,6 @@ async def gen(context: GenerateRequest, request: Request):
                             ),
                             500,
                         )
-                    if server_config["retry_delay"] >= 0:
-                        await asyncio.sleep(server_config["retry_delay"])
                     continue
             except:
                 error_response = response.text
