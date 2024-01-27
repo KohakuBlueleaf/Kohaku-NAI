@@ -183,6 +183,9 @@ async def generate(
             cfg_rescale,
             extra_info_json,
         )
+        if not isinstance(img_data, bytes):
+            print(f"Error Message: {img_data}")
+            return None
     elif mode == "local":
         await set_client(backend, token=token)
         img_data, _ = await generate_novelai_image(
@@ -203,6 +206,7 @@ async def generate(
             cfg_rescale,
         )
         if not isinstance(img_data, bytes):
+            print(f"Error Message: {img_data}")
             return None
         img = image_from_bytes(img_data)
     else:
