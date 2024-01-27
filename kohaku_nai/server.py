@@ -197,7 +197,7 @@ async def gen(context: GenerateRequest, request: Request):
                 ):
                     retry_count += 1
                     if retry_count > server_config["max_retries"]:
-                        print(f"Exceed max retries for NAI {status_code} errors: {error_mes}")
+                        print(f"Exceed max retries for NAI {status_code} errors: {error_response}")
                         return Response(
                             json.dumps(
                                 {
