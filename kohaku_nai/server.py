@@ -47,6 +47,8 @@ class NAILocalClient:
     def __init__(self, token, client: HttpClient):
         self.token = token
         self.client = client
+        self.error_time = 0
+        self.in_error = False
         self.lock = asyncio.Lock()
 
     @classmethod
@@ -152,8 +154,16 @@ async def gen(context: GenerateRequest, request: Request):
         # Wait for available client, if none available, switch the control back to eventloop
         while True:
             for client in nai_clients.values():
-                if client.available:
+                if not client.available:
+                    continue
+                elif not client.in_error:
                     break
+                elif time.time() >= client.error_time + server_config["retry_delay"]:
+                    client.in_error = False
+                    break
+                else:
+                    await asyncio.sleep(0)
+                    continue
             else:
                 await asyncio.sleep(0)
                 continue
@@ -197,7 +207,9 @@ async def gen(context: GenerateRequest, request: Request):
                 ):
                     retry_count += 1
                     if retry_count > server_config["max_retries"]:
-                        print(f"Exceed max retries for NAI {status_code} errors: {error_response}")
+                        print(
+                            f"Exceed max retries for NAI {status_code} errors: {error_mes}"
+                        )
                         return Response(
                             json.dumps(
                                 {

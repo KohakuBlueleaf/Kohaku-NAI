@@ -105,7 +105,9 @@ DEFAULT_ARGS = {
 def make_file_name(args: dict[str, Any]):
     prompt = args.pop("prompt", "")[:20]
     neg_prompt = args.pop("negative_prompt", "")[:20]
-    file_name = f"{prompt}_{neg_prompt}_" + "_".join([f"{k}={v}" for k, v in args.items()])
+    file_name = f"{prompt}_{neg_prompt}_" + "_".join(
+        [f"{k}={v}" for k, v in args.items()]
+    )
     return file_name
 
 
