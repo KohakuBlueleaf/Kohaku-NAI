@@ -1,6 +1,7 @@
 import sys
 import asyncio
 import random
+import re
 import io
 import zipfile
 import json
@@ -102,13 +103,16 @@ DEFAULT_ARGS = {
 }
 
 
+file_name_cleaner = re.compile(r"[^a-zA-Z0-9_.-]")
+
+
 def make_file_name(args: dict[str, Any]):
     prompt = args.pop("prompt", "")[:20]
     neg_prompt = args.pop("negative_prompt", "")[:20]
     file_name = f"{prompt}_{neg_prompt}_" + "_".join(
         [f"{k}={v}" for k, v in args.items()]
     )
-    return file_name
+    return file_name_cleaner.sub("", file_name)
 
 
 async def remote_gen(
