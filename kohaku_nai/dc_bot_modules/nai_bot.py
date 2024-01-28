@@ -124,7 +124,7 @@ class KohakuNai(dc_commands.Cog):
                         continue
                     if isinstance(info, dict):
                         for k, v in info.items():
-                            error_embed.add_field(name=k, value=v)
+                            error_embed.add_field(name=k, value=str(v)[:200] + "...")
                     else:
                         error_embed.add_field(name="info", value=str(info)[:200] + "...")
                 await ctx.reply(
