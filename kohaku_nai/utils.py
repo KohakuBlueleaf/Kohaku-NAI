@@ -17,7 +17,7 @@ if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
-API_URL = "https://api.novelai.net"
+API_URL = "https://image.novelai.net"
 HttpClient = AsyncClient | AsyncSession
 
 jwt_token = ""
