@@ -126,7 +126,9 @@ class KohakuNai(dc_commands.Cog):
                         for k, v in info.items():
                             error_embed.add_field(name=k, value=str(v)[:200] + "...")
                     else:
-                        error_embed.add_field(name="info", value=str(info)[:200] + "...")
+                        error_embed.add_field(
+                            name="info", value=str(info)[:200] + "..."
+                        )
                 await ctx.reply(
                     content=f"{ctx.author.mention}\nGeneration failed:",
                     embed=error_embed,

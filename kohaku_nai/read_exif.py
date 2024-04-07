@@ -10,7 +10,7 @@ def read_info_from_image(image: Image.Image) -> tuple[str | None, dict]:
     """
     items = (image.info or {}).copy()
 
-    geninfo = items.pop('parameters', None)
+    geninfo = items.pop("parameters", None)
 
     if "exif" in items:
         exif_data = items["exif"]
@@ -19,24 +19,23 @@ def read_info_from_image(image: Image.Image) -> tuple[str | None, dict]:
         except OSError:
             # memory / exif was not valid so piexif tried to read from a file
             exif = None
-        exif_comment = (exif or {}).get("Exif",
-                                        {}).get(piexif.ExifIFD.UserComment, b'')
+        exif_comment = (exif or {}).get("Exif", {}).get(piexif.ExifIFD.UserComment, b"")
         try:
             exif_comment = piexif.helper.UserComment.load(exif_comment)
         except ValueError:
-            exif_comment = exif_comment.decode('utf8', errors="ignore")
+            exif_comment = exif_comment.decode("utf8", errors="ignore")
 
         if exif_comment:
-            items['exif comment'] = exif_comment
+            items["exif comment"] = exif_comment
             geninfo = exif_comment
-    elif "comment" in items:    # for gif
-        geninfo = items["comment"].decode('utf8', errors="ignore")
+    elif "comment" in items:  # for gif
+        geninfo = items["comment"].decode("utf8", errors="ignore")
 
     return geninfo, items
 
 
 @click.command()
-@click.argument('image', type=click.Path(exists=True))
+@click.argument("image", type=click.Path(exists=True))
 def main(image: str):
     image = Image.open(image)
     geninfo, items = read_info_from_image(image)
@@ -44,5 +43,5 @@ def main(image: str):
     print(items)
 
 
-if __name__ == '__main__':
-    main()    # pylint: disable=no-value-for-parameter
+if __name__ == "__main__":
+    main()  # pylint: disable=no-value-for-parameter

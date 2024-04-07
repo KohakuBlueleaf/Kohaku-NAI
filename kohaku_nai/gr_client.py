@@ -42,9 +42,7 @@ def control_ui():
                 label="UC Preset",
             )
     with gr.Row():
-        seed = gr.Number(
-            label="Seed", value=-1, step=1, maximum=2**32 - 1, minimum=-1
-        )
+        seed = gr.Number(label="Seed", value=-1, step=1, maximum=2**32 - 1, minimum=-1)
         sampler = gr.Dropdown(
             choices=[
                 "k_euler",
@@ -245,17 +243,21 @@ def main_ui():
                 image = preview_ui()
     mode = modes[0]
     width.change(
-        lambda w, h, mode: h
-        if mode == "local" or w * h <= 1024 * 1024
-        else (1024 * 1024 // w // 64) * 64,
+        lambda w, h, mode: (
+            h
+            if mode == "local" or w * h <= 1024 * 1024
+            else (1024 * 1024 // w // 64) * 64
+        ),
         [width, height, mode],
         height,
         show_progress=False,
     )
     height.change(
-        lambda w, h, mode: w
-        if mode == "local" or w * h <= 1024 * 1024
-        else (1024 * 1024 // h // 64) * 64,
+        lambda w, h, mode: (
+            w
+            if mode == "local" or w * h <= 1024 * 1024
+            else (1024 * 1024 // h // 64) * 64
+        ),
         [width, height, mode],
         width,
         show_progress=False,

@@ -259,7 +259,6 @@ def image_from_bytes(data: bytes):
     return Image.open(img_file)
 
 
-
 def process_image_as_webp(
     image: Image,
     quality: int = 75,
@@ -310,9 +309,8 @@ def process_image_as_webp(
             # https://exiftool.org/TagNames/EXIF.html
             # 0x9286 UserComment
             metadata_bytes = piexif.dump(
-                {"Exif": {
-                    0x9286: bytes(json.dumps(items, indent=4), "utf-8")
-                }})
+                {"Exif": {0x9286: bytes(json.dumps(items, indent=4), "utf-8")}}
+            )
 
     ret = io.BytesIO()
     if metadata_bytes:
