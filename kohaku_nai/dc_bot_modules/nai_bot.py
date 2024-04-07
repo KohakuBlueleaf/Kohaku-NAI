@@ -19,7 +19,7 @@ def event_with_error(func):
     async def function(*args, **kwargs):
         try:
             return await func(*args, **kwargs)
-        except:
+        except Exception:
             err = format_exc()
             log_error_event(err)
 
@@ -79,7 +79,7 @@ class KohakuNai(dc_commands.Cog):
             steps = int(default_args["steps"])
             scale = float(default_args["scale"])
             images = int(default_args["images"])
-        except:
+        except ValueError:
             await ctx.reply("Your input is invalid")
             return
 

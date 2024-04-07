@@ -168,7 +168,7 @@ async def remote_gen(
     else:
         try:
             data = response.json()
-        except:
+        except json.JSONDecodeError:
             data = response.content
         return None, data
 
