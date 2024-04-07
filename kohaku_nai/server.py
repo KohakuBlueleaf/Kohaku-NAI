@@ -119,6 +119,57 @@ async def login(password: str, request: Request):
         return Response(json.dumps({"status": "login failed"}), 403)
 
 
+async def get_available_client() -> NAILocalClient:
+    while True:
+        for client in nai_clients.values():
+            if not client.available:
+                # Not available
+                continue
+            elif not client.in_error:
+                # available + no error
+                break
+            elif time.time() >= client.error_time + server_config["retry_delay"]:
+                # available + in error + retry delay passed
+                client.in_error = False
+                break
+            else:
+                # in error + retry delay not passed
+                # Use asyncio.sleep to yield control to the event loop
+                await asyncio.sleep(0)
+                continue
+        else:
+            # No client available
+            # Use asyncio.sleep to yield control to the event loop
+            await asyncio.sleep(0)
+            continue
+        break
+    return client
+
+
+def make_error(error_mes, response, retry_count):
+    try:
+        error_response = response.json()
+        if (
+            "statusCode" in error_response
+            and (status_code := error_response["statusCode"]) in retry_list
+        ):
+            if retry_count >= server_config["max_retries"]:
+                print(f"Exceed max retries for NAI {status_code} errors: {error_mes}")
+                return Response(
+                    json.dumps(
+                        {
+                            "error-mes": "Exceed max retries for NAI errors",
+                            "status": f"{status_code} error from NAI server",
+                        }
+                    ),
+                    500,
+                )
+            return None
+    except json.JSONDecodeError:
+        error_response = response.text
+    return Response(json.dumps({"error-mes": error_mes, "status": error_response}), 500)
+
+
 @app.post("/gen")
 async def gen(context: GenerateRequest, request: Request):
     global prev_gen_time
@@ -127,7 +178,7 @@ async def gen(context: GenerateRequest, request: Request):
     is_free_only = request.session.get("free_only", True)
     try:
         extra_infos = json.loads(context.extra_infos)
-    except:
+    except json.JSONDecodeError:
         return Response(
             json.dumps(
                 {"status": "Extra infos in invalid format, please send json strings."}
@@ -151,31 +202,7 @@ async def gen(context: GenerateRequest, request: Request):
 
     retry_count = 0
     while True:
-        # Wait for available client, if none available, switch the control back to eventloop
-        while True:
-            for client in nai_clients.values():
-                if not client.available:
-                    # Not available
-                    continue
-                elif not client.in_error:
-                    # available + no error
-                    break
-                elif time.time() >= client.error_time + server_config["retry_delay"]:
-                    # available + in error + retry delay passed
-                    client.in_error = False
-                    break
-                else:
-                    # in error + retry delay not passed
-                    # Use asyncio.sleep to yield control to the event loop
-                    await asyncio.sleep(0)
-                    continue
-            else:
-                # No client available
-                # Use asyncio.sleep to yield control to the event loop
-                await asyncio.sleep(0)
-                continue
-            break
-
+        client = await get_available_client()
         async with client as http_client:
             async with generate_semaphore:
                 if prev_gen_time + server_config["min_delay"] > time.time():
@@ -211,32 +238,10 @@ async def gen(context: GenerateRequest, request: Request):
         if error:
             error_mes = img_bytes
             response = json_payload
-            try:
-                error_response = response.json()
-                if (
-                    "statusCode" in error_response
-                    and (status_code := error_response["statusCode"]) in retry_list
-                ):
-                    retry_count += 1
-                    if retry_count > server_config["max_retries"]:
-                        print(
-                            f"Exceed max retries for NAI {status_code} errors: {error_mes}"
-                        )
-                        return Response(
-                            json.dumps(
-                                {
-                                    "error-mes": "Exceed max retries for NAI errors",
-                                    "status": f"{status_code} error from NAI server",
-                                }
-                            ),
-                            500,
-                        )
-                    continue
-            except:
-                error_response = response.text
-            return Response(
-                json.dumps({"error-mes": error_mes, "status": error_response}), 500
-            )
+            err_resp = make_error(error_mes, response, retry_count)
+            if err_resp:
+                return err_resp
+            retry_count += 1
         else:
             break
 
