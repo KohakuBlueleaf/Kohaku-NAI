@@ -122,6 +122,8 @@ async def login(password: str, request: Request):
 async def get_available_client() -> NAILocalClient:
     while True:
         for client in nai_clients.values():
+            if client is None:
+                continue
             if not client.available:
                 # Not available
                 continue
