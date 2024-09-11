@@ -5,6 +5,7 @@ import json
 import time
 import random
 import click
+import heapq
 from uvicorn import Config, Server
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
@@ -35,6 +36,7 @@ auth_configs: list[GenServerConfig] = []
 nai_clients: dict[str, "NAILocalClient"] = {}
 retry_list: set[int] = set()
 prev_gen_time = time.time()
+priority_queue = []
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=uuid4().hex)
@@ -113,14 +115,24 @@ async def login(password: str, request: Request):
                 "save_path", server_config["save_path"]
             )
             request.session["custom_sub_folder"] = auth.get("custom_sub_folder", False)
+            request.session["max_priority"] = auth.get("max_priority", 1)
             return {"status": "login success"}
     else:
         request.session.clear()
         return Response(json.dumps({"status": "login failed"}), 403)
 
 
-async def get_available_client() -> NAILocalClient:
+async def get_available_client(priority: int = 0) -> NAILocalClient:
+    global priority_queue
+    request_time = time.time()
+    priority_info = (-priority, request_time)
+    heapq.heappush(priority_queue, priority_info)
     while True:
+        if priority_queue[0] is not priority_info:
+            await asyncio.sleep(0)
+            continue
+        else:
+            heapq.heappop(priority_queue)
         for client in nai_clients.values():
             if client is None:
                 continue
@@ -178,6 +190,9 @@ async def gen(context: GenerateRequest, request: Request):
 
     is_signed = request.session.get("signed", False)
     is_free_only = request.session.get("free_only", True)
+    # no max_priority means the user is not login
+    max_priority = request.session.get("max_priority", 0)
+    priority = min(max_priority, context.priority)
     try:
         extra_infos = json.loads(context.extra_infos)
     except json.JSONDecodeError:
@@ -204,7 +219,7 @@ async def gen(context: GenerateRequest, request: Request):
 
     retry_count = 0
     while True:
-        client = await get_available_client()
+        client = await get_available_client(priority)
         async with client as http_client:
             async with generate_semaphore:
                 if prev_gen_time + server_config["min_delay"] > time.time():

@@ -17,3 +17,4 @@ class GenerateRequest(BaseModel):
     cfg_rescale: float = 0.0
     img_sub_folder: str = ""
     extra_infos: str = ""
+    priority: int = 1
