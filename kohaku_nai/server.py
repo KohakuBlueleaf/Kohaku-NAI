@@ -131,8 +131,6 @@ async def get_available_client(priority: int = 0) -> NAILocalClient:
         if priority_queue[0] is not priority_info:
             await asyncio.sleep(0)
             continue
-        else:
-            heapq.heappop(priority_queue)
         for client in nai_clients.values():
             if client is None:
                 continue
@@ -156,6 +154,7 @@ async def get_available_client(priority: int = 0) -> NAILocalClient:
             # Use asyncio.sleep to yield control to the event loop
             await asyncio.sleep(0)
             continue
+        heapq.heappop(priority_queue)
         break
     return client
 
