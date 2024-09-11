@@ -46,17 +46,7 @@ class KohakuNai(dc_commands.Cog):
                 for invite in invites:
                     print(f'     - {invite.url}')
             except:
-                for channel in guild.channels:
-                    try:
-                        invite = await channel.create_invite()
-                    except:
-                        continue
-                else:
-                    invite = None
-                if invite is not None:
-                    print(f"  - invite: {invite.url}")
-                else:
-                    print(f"  - Failed to create invite")
+                print(f"  - Failed to fetch invite link")
             
         await self.bot.change_presence(
             status=discord.Status.online, activity=discord.Game("Novel AI UwU")
