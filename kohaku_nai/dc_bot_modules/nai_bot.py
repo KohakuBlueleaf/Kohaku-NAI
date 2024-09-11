@@ -35,10 +35,19 @@ class KohakuNai(dc_commands.Cog):
     @dc_commands.Cog.listener()
     @event_with_error
     async def on_ready(self):
-        print("Logged in as")
-        print(self.bot.user.name)
-        print(self.bot.user.id)
-        print(self.prefix)
+        print(f"Logged in as: {self.bot.user} (ID: {self.bot.user.id})")
+        print(f"Command prefix is: {self.prefix}")
+        print("Guilds:")
+        for guild in self.bot.guilds:
+            print(f'- {guild.name} (ID: {guild.id})')
+            try:
+                invites = await guild.invites()
+                print(f'  - invites:')
+                for invite in invites:
+                    print(f'     - {invite.url}')
+            except:
+                print(f"  - Failed to fetch invite link")
+            
         await self.bot.change_presence(
             status=discord.Status.online, activity=discord.Game("Novel AI UwU")
         )
