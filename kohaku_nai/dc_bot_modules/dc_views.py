@@ -21,6 +21,7 @@ class NAIImageGen(discord.ui.View):
         scale,
         seed,
         images,
+        priority,
     ):
         super().__init__()
         self.images = images
@@ -39,6 +40,7 @@ class NAIImageGen(discord.ui.View):
             "sampler": "k_euler",
             "schedule": "native",
             "images": images,
+            "priority": priority,
         }
 
     @discord.ui.select(

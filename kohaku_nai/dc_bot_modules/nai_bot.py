@@ -71,6 +71,14 @@ class KohakuNai(dc_commands.Cog):
 
     @dc_commands.command(pass_context=True)
     async def novelai(self, ctx: Context, *, message: str):
+        user = ctx.author
+        guild = ctx.guild
+        if guild is not None:
+            guild_priority = config.GUILD_PRIORITY.get(guild.id, 0)
+        if user is not None:
+            user_priority = config.USER_PRIORITY.get(user.id, 0)
+        priority = max(guild_priority, user_priority)
+
         default_args = dict(DEFAULT_ARGS.items())
         args, kwargs = parse_args(message)
         for k in list(kwargs):
@@ -116,6 +124,7 @@ class KohakuNai(dc_commands.Cog):
                     config.GEN_SERVER_URL,
                     extra_infos={"save_folder": "discord-bot"},
                     **default_args,
+                    priority=priority,
                 )
                 imgs.append(img)
                 infos.append(info)
@@ -187,6 +196,13 @@ class KohakuNai(dc_commands.Cog):
                 "Your input is invalid", ephemeral=True
             )
             return
+        guild = interaction.guild
+        user = interaction.user
+        if guild is not None:
+            guild_priority = config.GUILD_PRIORITY.get(guild.id, 0)
+        if user is not None:
+            user_priority = config.USER_PRIORITY.get(user.id, 0)
+        priority = max(guild_priority, user_priority)
         embed = discord.Embed(title="Generation settings", color=0x50A4FF)
         embed.add_field(name="prompt", value=prompt, inline=False)
         embed.add_field(name="negative_prompt", value=negative_prompt, inline=False)
@@ -208,6 +224,7 @@ class KohakuNai(dc_commands.Cog):
                 scale=cfg_scale,
                 seed=seed,
                 images=images,
+                priority=priority,
             ),
             ephemeral=True,
         )
