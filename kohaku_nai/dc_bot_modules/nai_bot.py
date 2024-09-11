@@ -39,15 +39,15 @@ class KohakuNai(dc_commands.Cog):
         print(f"Command prefix is: {self.prefix}")
         print("Guilds:")
         for guild in self.bot.guilds:
-            print(f'- {guild.name} (ID: {guild.id})')
+            print(f"- {guild.name} (ID: {guild.id})")
             try:
                 invites = await guild.invites()
-                print(f'  - invites:')
+                print(f"  - invites:")
                 for invite in invites:
-                    print(f'     - {invite.url}')
+                    print(f"     - {invite.url}")
             except:
                 print(f"  - Failed to fetch invite link")
-            
+
         await self.bot.change_presence(
             status=discord.Status.online, activity=discord.Game("Novel AI UwU")
         )
