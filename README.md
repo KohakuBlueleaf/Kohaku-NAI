@@ -94,7 +94,7 @@ python -m kohaku_nai.dc_bot
 ## Future Plan
 
 * Server
-  * [ ] QoS system (Should have dedicated QoS on dc bot side and give dc bot white list)
+  * [X] QoS system (Should have dedicated QoS on dc bot side and give dc bot white list)
 * Client
   - [ ] Better Client (maybe static website implemented in Vue)
   - [X] sd-webui extensions
