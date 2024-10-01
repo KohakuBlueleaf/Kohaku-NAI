@@ -1,5 +1,6 @@
 from subprocess import Popen
 from json import load, dumps
+from time import sleep
 
 
 with open("./dc-bot-config.json", "r", encoding="utf-8") as f:
@@ -30,4 +31,4 @@ input()
 for process in p_list:
     process.terminate()
     while not process.poll():
-        pass
+        sleep(0.01)

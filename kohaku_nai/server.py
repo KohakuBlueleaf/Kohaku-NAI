@@ -117,9 +117,8 @@ async def login(password: str, request: Request):
             request.session["custom_sub_folder"] = auth.get("custom_sub_folder", False)
             request.session["max_priority"] = auth.get("max_priority", 1)
             return {"status": "login success"}
-    else:
-        request.session.clear()
-        return Response(json.dumps({"status": "login failed"}), 403)
+    request.session.clear()
+    return Response(json.dumps({"status": "login failed"}), 403)
 
 
 async def get_available_client(priority: int = 0) -> NAILocalClient:

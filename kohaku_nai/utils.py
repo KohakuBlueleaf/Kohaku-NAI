@@ -137,6 +137,8 @@ async def remote_gen(
     priority=0,
     **kwargs,
 ):
+    if kwargs:
+        print(f"Unused kwargs: {kwargs.keys()}")
     payload = {
         "prompt": f"{prompt}, {QUALITY_TAGS}" if quality_tags else prompt,
         "neg_prompt": (
@@ -194,6 +196,8 @@ async def generate_novelai_image(
     client: HttpClient | None = None,
     **kwargs,
 ):
+    if kwargs:
+        print(f"Unused kwargs: {kwargs.keys()}")
     if client is None:
         client = global_client
     # Assign a random seed if seed is -1

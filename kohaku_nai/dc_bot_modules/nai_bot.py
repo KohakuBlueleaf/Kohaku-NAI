@@ -15,6 +15,9 @@ from kohaku_nai.dc_bot_modules import config
 from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS, make_file_name
 
 
+INVALID_NOTICE = "Your input is invalid"
+
+
 def event_with_error(func):
     async def function(*args, **kwargs):
         try:
@@ -40,13 +43,6 @@ class KohakuNai(dc_commands.Cog):
         print("Guilds:")
         for guild in self.bot.guilds:
             print(f"- {guild.name} (ID: {guild.id})")
-            # try:
-            #     invites = await guild.invites()
-            #     print(f"  - invites:")
-            #     for invite in invites:
-            #         print(f"     - {invite.url}")
-            # except:
-            #     print(f"  - Failed to fetch invite link")
 
         await self.bot.change_presence(
             status=discord.Status.online, activity=discord.Game("Novel AI UwU")
@@ -97,7 +93,7 @@ class KohakuNai(dc_commands.Cog):
             scale = float(default_args["scale"])
             images = int(default_args["images"])
         except ValueError:
-            await ctx.reply("Your input is invalid")
+            await ctx.reply(INVALID_NOTICE)
             return
 
         if (
@@ -109,7 +105,7 @@ class KohakuNai(dc_commands.Cog):
             or images > 4
             or images < 1
         ):
-            await ctx.reply("Your input is invalid")
+            await ctx.reply(INVALID_NOTICE)
             return
 
         gen_command = make_summary(default_args, self.prefix, DEFAULT_ARGS)
@@ -193,7 +189,7 @@ class KohakuNai(dc_commands.Cog):
             or images < 1
         ):
             await interaction.response.send_message(
-                "Your input is invalid", ephemeral=True
+                INVALID_NOTICE, ephemeral=True
             )
             return
         guild = interaction.guild

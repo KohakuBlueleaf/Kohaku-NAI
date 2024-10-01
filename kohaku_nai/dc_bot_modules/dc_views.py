@@ -46,8 +46,8 @@ class NAIImageGen(discord.ui.View):
     @discord.ui.select(
         placeholder="Quality Tags: Enable",
         options=[
-            discord.SelectOption(label=f"Enable", value=f"Enable"),
-            discord.SelectOption(label=f"Disable", value=f"Disable"),
+            discord.SelectOption(label="Enable", value="Enable"),
+            discord.SelectOption(label="Disable", value="Disable"),
         ],
     )
     async def quality_callback(
@@ -63,9 +63,9 @@ class NAIImageGen(discord.ui.View):
     @discord.ui.select(
         placeholder="UC preset: Heavy",
         options=[
-            discord.SelectOption(label=f"Heavy", value=f"Heavy"),
-            discord.SelectOption(label=f"Light", value=f"Light"),
-            discord.SelectOption(label=f"None", value=f"None"),
+            discord.SelectOption(label="Heavy", value="Heavy"),
+            discord.SelectOption(label="Light", value="Light"),
+            discord.SelectOption(label="None", value="None"),
         ],
     )
     async def uc_callback(
