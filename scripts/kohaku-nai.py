@@ -18,6 +18,7 @@ from kohaku_nai.utils import (
     generate_novelai_image,
     set_client,
     image_from_bytes,
+    GenerationError,
 )
 
 
@@ -31,9 +32,6 @@ async def run_tasks(tasks):
 
 
 class KohakuNAIScript(scripts.Script):
-    def __init__(self):
-        pass
-
     def title(self):
         return "Kohaku NAI Client"
 
@@ -183,7 +181,7 @@ class KohakuNAIScript(scripts.Script):
             failed_img_data = next(
                 img_data for img, img_data in zip(imgs, img_datas) if img is None
             )
-            raise Exception("Failed to generate image: " + str(failed_img_data))
+            raise GenerationError("Failed to generate image: " + str(failed_img_data))
         nai_infos = [images.read_info_from_image(img) for img in imgs]
 
         if p.enable_hr:

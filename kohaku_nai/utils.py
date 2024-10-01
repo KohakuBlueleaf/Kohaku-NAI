@@ -336,3 +336,7 @@ def process_image_as_webp(
         )
     ret.seek(0)
     return ret.read()
+
+
+class GenerationError(Exception):
+    pass

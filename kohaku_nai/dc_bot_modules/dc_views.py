@@ -3,7 +3,7 @@ from traceback import format_exc
 
 import discord
 
-from kohaku_nai.dc_bot_modules.functions import *
+from kohaku_nai.dc_bot_modules.functions import make_summary, log_error_command
 from kohaku_nai.dc_bot_modules import config
 from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS, make_file_name
 
