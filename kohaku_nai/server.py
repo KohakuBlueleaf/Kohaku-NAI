@@ -100,7 +100,7 @@ def save_img(save_path: str, sub_folder: str, image: bytes, json: str):
     if is_separate_metadata:
         metadata_name = f"{img_id}_{img_hash[:8]}.json"
         with open(
-            os.path.join(sub_folder, metadata_dir, metadata_name), "w", encoding="utf-8"
+            os.path.join(sub_folder_path, metadata_dir, metadata_name), "w", encoding="utf-8"
         ) as f:
             f.write(json)
 
