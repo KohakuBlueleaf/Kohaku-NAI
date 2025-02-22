@@ -13,7 +13,7 @@ from modules import shared, scripts, script_callbacks, images, devices
 from modules.sd_samplers_common import images_tensor_to_samples
 from modules.processing import Processed, StableDiffusionProcessingTxt2Img
 
-from kohaku_nai.api import set_client, generate_novelai_image
+from kohaku_nai.api import set_client, generate_novelai_image, MODEL_LIST
 from kohaku_nai.utils import (
     remote_gen,
     image_from_bytes,
@@ -40,6 +40,12 @@ class KohakuNAIScript(scripts.Script):
     def ui(self, is_img2img):
         info = gr.Markdown("""### Please select the `Sampler` options here""")
         with gr.Row():
+            model = gr.Dropdown(
+                choices=MODEL_LIST,
+                value="nai-diffusion-3",
+                label="Model",
+                interactive=True,
+            )
             sampler = gr.Dropdown(
                 choices=[
                     "k_euler",
@@ -66,7 +72,7 @@ class KohakuNAIScript(scripts.Script):
             dyn_threshold = gr.Checkbox(False, label="Dynamic Thresholding")
             cfg_rescale = gr.Slider(0, 1, 0, step=0.01, label="CFG rescale")
 
-        return [info, sampler, scheduler, smea, dyn, dyn_threshold, cfg_rescale]
+        return [info, sampler, scheduler, smea, dyn, dyn_threshold, cfg_rescale, model]
 
     def process(self, p, **kwargs):
         print(kwargs)
@@ -82,6 +88,7 @@ class KohakuNAIScript(scripts.Script):
         dyn,
         dyn_threshold,
         cfg_rescale,
+        model,
     ):
         if p.scripts is not None:
             p.scripts.before_process(p)
@@ -134,6 +141,7 @@ class KohakuNAIScript(scripts.Script):
                             dyn_threshold,
                             cfg_rescale,
                             shared.opts.knai_remote_server_ex_infos,
+                            model,
                         )
                         for i in range(p.batch_size)
                     ]
@@ -166,6 +174,7 @@ class KohakuNAIScript(scripts.Script):
                             dyn,
                             dyn_threshold,
                             cfg_rescale,
+                            model,
                         )
                         for i in range(p.batch_size)
                     ]
