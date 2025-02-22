@@ -23,7 +23,6 @@ from kohaku_nai.api import (
     make_client,
 )
 from kohaku_nai.utils import (
-    generate_novelai_image,
     free_check,
     image_from_bytes,
     process_image_as_webp,
