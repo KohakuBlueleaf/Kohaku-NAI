@@ -6,6 +6,7 @@ import httpx
 from loguru import logger
 
 from kohaku_nai.request import GenerateRequest
+from kohaku_nai.api import MODEL_LIST
 
 
 class AspectRatio(str, Enum):
@@ -55,6 +56,7 @@ ar_map: dict[AspectRatio, tuple[int, int]] = {
 @click.option("--dyn", is_flag=True, help="Dyn for sampler")
 @click.option("--dyn-threshold", is_flag=True, help="Dyn threshold for sampler")
 @click.option("--cfg-rescale", default=0, help="CFG rescale")
+@click.option("--model", default="nai-diffusion-3", help="Model to use", type=click.Choice(MODEL_LIST))
 @click.option("--sub-folder", default="", help="Sub folder to save to")
 @click.option("--ar", type=click.Choice(AspectRatio))
 @click.option(
@@ -75,6 +77,7 @@ def main(
     dyn: bool,
     dyn_threshold: bool,
     cfg_rescale: bool,
+    model: str,
     ar: AspectRatio | None,
     host: str,
     sub_folder: str,
@@ -114,6 +117,7 @@ def main(
         dyn=dyn,
         dyn_threshold=dyn_threshold,
         cfg_rescale=cfg_rescale,
+        model=model,
     )
     asyncio.run(send_req(host, req, sub_folder))
 

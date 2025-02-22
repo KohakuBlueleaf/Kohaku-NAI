@@ -12,10 +12,18 @@ from kohaku_nai.dc_bot_modules.functions import make_summary, log_error_event, l
 from kohaku_nai.dc_bot_modules.dc_views import NAIImageGen
 from kohaku_nai.dc_bot_modules import config
 
-from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS, make_file_name
+from kohaku_nai.utils import remote_gen, make_file_name
+from kohaku_nai.api import set_client, DEFAULT_ARGS, MODEL_LIST
 
 
 INVALID_NOTICE = "Your input is invalid"
+ADMIN_ANNOUCEMENT_TEMPLATE = """
+# Kohaku-NAI bot owner Notice
+***This message is sent to all admins of all servers that invited Kohaku-NAI.***
+---
+
+{message}
+""".strip()
 
 
 def event_with_error(func):
@@ -65,6 +73,28 @@ class KohakuNai(dc_commands.Cog):
             await self.bot.tree.sync()
             await ctx.send("Command tree synced")
 
+    async def get_all_guilds(self):
+        return self.bot.guilds
+
+    async def get_guild_admin(self, guild_id):
+        guild = self.bot.get_guild(guild_id)
+        admins = []
+        for member in guild.members:
+            if member.guild_permissions.administrator:
+                admins.append(member)
+        return admins
+
+    @dc_commands.command()
+    async def admin_announce(self, ctx: Context, *, message: str):
+        if ctx.author.id == config.ADMIN_ID:
+            for guild in await self.get_all_guilds():
+                admin = await self.get_guild_admin(guild.id)
+                for a in admin:
+                    try:
+                        await a.send(ADMIN_ANNOUCEMENT_TEMPLATE.format(message=message))
+                    except Exception:
+                        pass
+
     @dc_commands.command(pass_context=True)
     async def novelai(self, ctx: Context, *, message: str):
         user = ctx.author
@@ -104,6 +134,7 @@ class KohakuNai(dc_commands.Cog):
             or scale < 0
             or images > 4
             or images < 1
+            or default_args["model"] not in MODEL_LIST
         ):
             await ctx.reply(INVALID_NOTICE)
             return

@@ -18,3 +18,4 @@ class GenerateRequest(BaseModel):
     img_sub_folder: str = ""
     extra_infos: str = ""
     priority: int = 1
+    model: str = "nai-diffusion-3"

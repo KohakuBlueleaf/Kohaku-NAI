@@ -8,10 +8,13 @@ import json
 import gradio as gr
 import webview
 
-from kohaku_nai.utils import (
-    remote_gen,
+from kohaku_nai.api import (
     set_client,
     generate_novelai_image,
+    MODEL_LIST,
+)
+from kohaku_nai.utils import (
+    remote_gen,
     image_from_bytes,
 )
 from kohaku_nai.client_modules import extension
@@ -43,6 +46,12 @@ def control_ui():
             )
     with gr.Row():
         seed = gr.Number(label="Seed", value=-1, step=1, maximum=2**32 - 1, minimum=-1)
+        model = gr.Dropdown(
+            choices=MODEL_LIST,
+            value="nai-diffusion-3",
+            label="Model",
+            interactive=True,
+        )
         sampler = gr.Dropdown(
             choices=[
                 "k_euler",
@@ -74,6 +83,7 @@ def control_ui():
         width,
         height,
         steps,
+        model,
         sampler,
     ]
 
@@ -148,6 +158,7 @@ async def generate(
     width,
     height,
     steps,
+    model,
     sampler,
     scheduler,
     smea,
@@ -180,6 +191,7 @@ async def generate(
             dyn_threshold,
             cfg_rescale,
             extra_info_json,
+            model,
         )
         if not isinstance(img_data, bytes):
             print(f"Error Message: {img_data}")
@@ -202,6 +214,7 @@ async def generate(
             dyn,
             dyn_threshold,
             cfg_rescale,
+            model,
         )
         if not isinstance(img_data, bytes):
             print(f"Error Message: {img_data}")

@@ -5,7 +5,12 @@ import discord
 
 from kohaku_nai.dc_bot_modules.functions import make_summary, log_error_command
 from kohaku_nai.dc_bot_modules import config
-from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS, make_file_name
+from kohaku_nai.utils import remote_gen, make_file_name
+from kohaku_nai.api import (
+    set_client,
+    DEFAULT_ARGS,
+    MODEL_LIST,
+)
 
 
 class NAIImageGen(discord.ui.View):
@@ -22,6 +27,7 @@ class NAIImageGen(discord.ui.View):
         seed,
         images,
         priority,
+        model,
     ):
         super().__init__()
         self.images = images
@@ -41,7 +47,22 @@ class NAIImageGen(discord.ui.View):
             "schedule": "native",
             "images": images,
             "priority": priority,
+            "model": model,
         }
+
+    @discord.ui.select(
+        placeholder="Model: nai-diffusion-3",
+        options=[
+            discord.SelectOption(label=model, value=model)
+            for model in MODEL_LIST
+        ],
+    )
+    async def model_callback(
+        self, interaction: discord.Interaction, select: discord.ui.Select
+    ):
+        self.generate_config["model"] = select.values[0]
+        select.placeholder = f"Model: {select.values[0]}"
+        await interaction.response.edit_message(view=self)
 
     @discord.ui.select(
         placeholder="Quality Tags: Enable",
