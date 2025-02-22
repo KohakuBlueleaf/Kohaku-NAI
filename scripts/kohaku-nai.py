@@ -13,10 +13,9 @@ from modules import shared, scripts, script_callbacks, images, devices
 from modules.sd_samplers_common import images_tensor_to_samples
 from modules.processing import Processed, StableDiffusionProcessingTxt2Img
 
+from kohaku_nai.api import set_client, generate_novelai_image
 from kohaku_nai.utils import (
     remote_gen,
-    generate_novelai_image,
-    set_client,
     image_from_bytes,
     GenerationError,
 )
