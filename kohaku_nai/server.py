@@ -244,6 +244,7 @@ async def gen(context: GenerateRequest, request: Request):
                     context.dyn,
                     context.dyn_threshold,
                     context.cfg_rescale,
+                    context.model,
                     client=http_client,
                 )
             error = not isinstance(img_bytes, bytes)
@@ -253,6 +254,8 @@ async def gen(context: GenerateRequest, request: Request):
                 client.error_time = time.time()
 
         if error:
+            print(f"Error from NAI: {img_bytes}")
+            print(json_payload.json())
             error_mes = img_bytes
             response = json_payload
             err_resp = make_error(error_mes, response, retry_count)

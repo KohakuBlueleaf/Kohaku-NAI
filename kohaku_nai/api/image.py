@@ -90,6 +90,8 @@ async def generate_novelai_image(
         "input": f"{prompt}, {QUALITY_TAGS}" if quality_tags else prompt,
         "model": "nai-diffusion-3" if model not in MODEL_LIST else model,
         "parameters": {
+            "params_version": 1,
+            "characterPrompts": [],
             "width": width,
             "height": height,
             "scale": scale,
@@ -106,15 +108,41 @@ async def generate_novelai_image(
                 f"{UCPRESET[ucpreset]}, {negative_prompt}"
                 if ucpreset in UCPRESET
                 else negative_prompt
-            ),
+            ).strip().replace("\n", " "),
             "noise_schedule": schedule,
             "qualityToggle": True,
             "seed": seed,
             "sm": smea,
             "sm_dyn": dyn,
             "uncond_scale": 1,
+            "deliberate_euler_ancestral_bug": False,
+            "dynamic_thresholding": False,
+            "legacy": False,
+            "legacy_v3_extend": False,
+            "reference_image_multiple": [],
+            "reference_information_extracted_multiple": [],
+            "reference_strength_multiple": [],
+            "add_original_image": False,
         },
     }
+    payload["input"] = payload["input"].strip().replace("\n", " ")
+    if "nai-diffusion-4" in model:
+        payload["parameters"]["v4_prompt"] = {
+            "caption": {
+                "base_caption": payload["input"].strip().replace("\n", " "),
+                "char_captions": []
+            },
+            "use_coords": False,
+            "use_order": False,
+        }
+        payload["parameters"]["v4_negative_prompt"] = {
+            "caption": {
+                "base_caption": payload["parameters"]["negative_prompt"],
+                "char_captions": []
+            },
+            "use_coords": False,
+            "use_order": False,
+        }
 
     # Send the POST request
     response = await client.post(f"{API_IMAGE_URL}/ai/generate-image", json=payload)

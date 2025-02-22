@@ -48,9 +48,6 @@ async def make_client(
             "timeout": 3600,
             "headers": {
                 "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-                "Origin": "https://novelai.net",
-                "Referer": "https://novelai.net/",
             },
         }
         if backend == "curl_cffi":
