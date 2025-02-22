@@ -7,8 +7,8 @@ from typing import Any
 
 from PIL import Image
 
-import api
-from api.image import (
+from . import api
+from .api.image import (
     QUALITY_TAGS,
     UCPRESET,
 )
