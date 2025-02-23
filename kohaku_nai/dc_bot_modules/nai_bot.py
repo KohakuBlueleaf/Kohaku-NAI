@@ -209,6 +209,7 @@ class KohakuNai(dc_commands.Cog):
         cfg_scale: float = 5.0,
         seed: int = -1,
         images: int = 1,
+        quality_tags: bool = True,
     ):
         if (
             width % 64
@@ -233,11 +234,11 @@ class KohakuNai(dc_commands.Cog):
         embed = discord.Embed(title="Generation settings", color=0x50A4FF)
         embed.add_field(name="prompt", value=prompt, inline=False)
         embed.add_field(name="negative_prompt", value=negative_prompt, inline=False)
-        embed.add_field(name="width", value=width, inline=False)
-        embed.add_field(name="height", value=height, inline=False)
-        embed.add_field(name="steps", value=steps, inline=False)
-        embed.add_field(name="CFG scale", value=cfg_scale, inline=False)
-        embed.add_field(name="Num of image gen", value=images, inline=False)
+        embed.add_field(name="width", value=width, inline=True)
+        embed.add_field(name="height", value=height, inline=True)
+        embed.add_field(name="steps", value=steps, inline=True)
+        embed.add_field(name="CFG scale", value=cfg_scale, inline=True)
+        embed.add_field(name="Num of image gen", value=images, inline=True)
         await interaction.response.send_message(
             embed=embed,
             view=NAIImageGen(
@@ -252,6 +253,7 @@ class KohakuNai(dc_commands.Cog):
                 seed=seed,
                 images=images,
                 priority=priority,
+                quality_tags=quality_tags,
             ),
             ephemeral=True,
         )

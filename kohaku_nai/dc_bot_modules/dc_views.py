@@ -27,7 +27,7 @@ class NAIImageGen(discord.ui.View):
         seed,
         images,
         priority,
-        model,
+        quality_tags,
     ):
         super().__init__()
         self.images = images
@@ -35,7 +35,7 @@ class NAIImageGen(discord.ui.View):
         self.prefix = prefix
         self.generate_config = {
             "prompt": prompt,
-            "quality_tags": True,
+            "quality_tags": quality_tags,
             "negative_prompt": neg_prompt,
             "ucpreset": "Heavy",
             "width": width,
@@ -47,8 +47,9 @@ class NAIImageGen(discord.ui.View):
             "schedule": "native",
             "images": images,
             "priority": priority,
-            "model": model,
+            "model": "nai-diffusion-3",
         }
+        print("VIEW created")
 
     @discord.ui.select(
         placeholder="Model: nai-diffusion-3",
@@ -64,22 +65,22 @@ class NAIImageGen(discord.ui.View):
         select.placeholder = f"Model: {select.values[0]}"
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.select(
-        placeholder="Quality Tags: Enable",
-        options=[
-            discord.SelectOption(label="Enable", value="Enable"),
-            discord.SelectOption(label="Disable", value="Disable"),
-        ],
-    )
-    async def quality_callback(
-        self, interaction: discord.Interaction, select: discord.ui.Select
-    ):
-        if select.values[0] == "Enable":
-            self.generate_config["quality_tags"] = True
-        else:
-            self.generate_config["quality_tags"] = False
-        select.placeholder = f"Quality Tags: {select.values[0]}"
-        await interaction.response.edit_message(view=self)
+    # @discord.ui.select(
+    #     placeholder="Quality Tags: Enable",
+    #     options=[
+    #         discord.SelectOption(label="Enable", value="Enable"),
+    #         discord.SelectOption(label="Disable", value="Disable"),
+    #     ],
+    # )
+    # async def quality_callback(
+    #     self, interaction: discord.Interaction, select: discord.ui.Select
+    # ):
+    #     if select.values[0] == "Enable":
+    #         self.generate_config["quality_tags"] = True
+    #     else:
+    #         self.generate_config["quality_tags"] = False
+    #     select.placeholder = f"Quality Tags: {select.values[0]}"
+    #     await interaction.response.edit_message(view=self)
 
     @discord.ui.select(
         placeholder="UC preset: Heavy",
