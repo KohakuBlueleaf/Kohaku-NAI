@@ -52,7 +52,8 @@ MODEL_LIST = [
     "kandinsky-vanilla",
     "nai-diffusion-2",
     "nai-diffusion-3",
-    "nai-diffusion-4-curated-preview"
+    "nai-diffusion-4-curated-preview",
+    "nai-diffusion-4-full"
 ]
 
 
