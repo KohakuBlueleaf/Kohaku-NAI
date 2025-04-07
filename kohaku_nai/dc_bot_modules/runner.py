@@ -20,6 +20,15 @@ if sys.platform == "win32":
 cmd_config = loads(sys.argv[1])
 config.GEN_SERVER_URL = cmd_config.get("url", config.GEN_SERVER_URL)
 config.GEN_SERVER_PSWD = cmd_config.get("password", config.GEN_SERVER_PSWD)
+config.GUILD_PRIORITY = {
+    int(k): v
+    for k, v in cmd_config.get("guild_priority", config.GUILD_PRIORITY).items()
+}
+config.USER_PRIORITY = {
+    int(k): v 
+    for k, v in cmd_config.get("user_priority", config.USER_PRIORITY).items()
+}
+config.ADMIN_ID = cmd_config.get("admin_id", None)
 
 
 async def main():

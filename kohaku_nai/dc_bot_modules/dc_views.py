@@ -3,9 +3,14 @@ from traceback import format_exc
 
 import discord
 
-from kohaku_nai.dc_bot_modules.functions import *
+from kohaku_nai.dc_bot_modules.functions import make_summary, log_error_command
 from kohaku_nai.dc_bot_modules import config
-from kohaku_nai.utils import set_client, remote_gen, DEFAULT_ARGS, make_file_name
+from kohaku_nai.utils import remote_gen, make_file_name
+from kohaku_nai.api import (
+    set_client,
+    DEFAULT_ARGS,
+    MODEL_LIST,
+)
 
 
 class NAIImageGen(discord.ui.View):
@@ -21,6 +26,8 @@ class NAIImageGen(discord.ui.View):
         scale,
         seed,
         images,
+        priority,
+        quality_tags,
     ):
         super().__init__()
         self.images = images
@@ -28,7 +35,7 @@ class NAIImageGen(discord.ui.View):
         self.prefix = prefix
         self.generate_config = {
             "prompt": prompt,
-            "quality_tags": True,
+            "quality_tags": quality_tags,
             "negative_prompt": neg_prompt,
             "ucpreset": "Heavy",
             "width": width,
@@ -39,31 +46,48 @@ class NAIImageGen(discord.ui.View):
             "sampler": "k_euler",
             "schedule": "native",
             "images": images,
+            "priority": priority,
+            "model": "nai-diffusion-3",
         }
+        print("VIEW created")
 
     @discord.ui.select(
-        placeholder="Quality Tags: Enable",
+        placeholder="Model: nai-diffusion-3",
         options=[
-            discord.SelectOption(label=f"Enable", value=f"Enable"),
-            discord.SelectOption(label=f"Disable", value=f"Disable"),
+            discord.SelectOption(label=model, value=model)
+            for model in MODEL_LIST
         ],
     )
-    async def quality_callback(
+    async def model_callback(
         self, interaction: discord.Interaction, select: discord.ui.Select
     ):
-        if select.values[0] == "Enable":
-            self.generate_config["quality_tags"] = True
-        else:
-            self.generate_config["quality_tags"] = False
-        select.placeholder = f"Quality Tags: {select.values[0]}"
+        self.generate_config["model"] = select.values[0]
+        select.placeholder = f"Model: {select.values[0]}"
         await interaction.response.edit_message(view=self)
+
+    # @discord.ui.select(
+    #     placeholder="Quality Tags: Enable",
+    #     options=[
+    #         discord.SelectOption(label="Enable", value="Enable"),
+    #         discord.SelectOption(label="Disable", value="Disable"),
+    #     ],
+    # )
+    # async def quality_callback(
+    #     self, interaction: discord.Interaction, select: discord.ui.Select
+    # ):
+    #     if select.values[0] == "Enable":
+    #         self.generate_config["quality_tags"] = True
+    #     else:
+    #         self.generate_config["quality_tags"] = False
+    #     select.placeholder = f"Quality Tags: {select.values[0]}"
+    #     await interaction.response.edit_message(view=self)
 
     @discord.ui.select(
         placeholder="UC preset: Heavy",
         options=[
-            discord.SelectOption(label=f"Heavy", value=f"Heavy"),
-            discord.SelectOption(label=f"Light", value=f"Light"),
-            discord.SelectOption(label=f"None", value=f"None"),
+            discord.SelectOption(label="Heavy", value="Heavy"),
+            discord.SelectOption(label="Light", value="Light"),
+            discord.SelectOption(label="None", value="None"),
         ],
     )
     async def uc_callback(
