@@ -104,6 +104,12 @@ class KohakuNai(dc_commands.Cog):
         if guild is not None:
             guild_priority = config.GUILD_PRIORITY.get(guild.id, 0)
         priority = max(guild_priority, user_priority)
+        if priority == 0 and config.WHITE_LIST:
+            await ctx.reply(
+                "This command is not allowed for this server or user. "
+                "Please contact the bot owner for more information."
+            )
+            return
 
         default_args = dict(DEFAULT_ARGS.items())
         args, kwargs = parse_args(message)
@@ -231,6 +237,12 @@ class KohakuNai(dc_commands.Cog):
         if guild is not None:
             guild_priority = config.GUILD_PRIORITY.get(guild.id, 0)
         priority = max(guild_priority, user_priority)
+        if priority == 0 and config.WHITE_LIST:
+            await interaction.response.send_message(
+                "This command is not allowed for this server or user. "
+                "Please contact the bot owner for more information."
+            )
+            return
         embed = discord.Embed(title="Generation settings", color=0x50A4FF)
         embed.add_field(name="prompt", value=prompt, inline=False)
         embed.add_field(name="negative_prompt", value=negative_prompt, inline=False)
