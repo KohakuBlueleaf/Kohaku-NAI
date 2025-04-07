@@ -45,9 +45,8 @@ def control_ui():
                 label="UC Preset",
             )
     with gr.Row():
-        seed = gr.Number(label="Seed", value=-1, step=1, maximum=2**32 - 1, minimum=-1)
         model = gr.Dropdown(
-            choices=MODEL_LIST,
+            choices=MODEL_LIST[::-1],
             value="nai-diffusion-3",
             label="Model",
             interactive=True,
@@ -65,6 +64,8 @@ def control_ui():
             label="Sampler",
             interactive=True,
         )
+    with gr.Row():
+        seed = gr.Number(label="Seed", value=-1, step=1, maximum=2**32 - 1, minimum=-1)
         scale = gr.Slider(label="Scale", value=5.0, minimum=1, maximum=10, step=0.1)
         steps = gr.Slider(label="Steps", value=28, minimum=1, maximum=50, step=1)
     with gr.Row():
