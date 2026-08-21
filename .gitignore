@@ -1,4 +1,7 @@
 data*/
+dc-bot-config.json
+tg-bot-config.json
+config.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
