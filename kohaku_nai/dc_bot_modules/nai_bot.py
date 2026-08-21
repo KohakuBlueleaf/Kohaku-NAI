@@ -11,6 +11,12 @@ from kohaku_nai.args_creator import CAPITAL_ARGS_MAPPING, parse_args
 from kohaku_nai.dc_bot_modules.functions import make_summary, log_error_event, log_error_command
 from kohaku_nai.dc_bot_modules.dc_views import NAIImageGen
 from kohaku_nai.dc_bot_modules import config
+from kohaku_nai.dc_bot_modules.permission import (
+    check_permission,
+    has_any_permission,
+    model_denied_notice,
+    NO_ACCESS_NOTICE,
+)
 
 from kohaku_nai.utils import remote_gen, make_file_name
 from kohaku_nai.api import set_client, DEFAULT_ARGS, MODEL_LIST
@@ -99,16 +105,9 @@ class KohakuNai(dc_commands.Cog):
     async def novelai(self, ctx: Context, *, message: str):
         user = ctx.author
         guild = ctx.guild
-        user_priority = config.USER_PRIORITY.get(user.id, 0)
-        guild_priority = 0
-        if guild is not None:
-            guild_priority = config.GUILD_PRIORITY.get(guild.id, 0)
-        priority = max(guild_priority, user_priority)
-        if priority == 0 and config.WHITE_LIST:
-            await ctx.reply(
-                "This command is not allowed for this server or user. "
-                "Please contact the bot owner for more information."
-            )
+        guild_id = guild.id if guild is not None else None
+        if not has_any_permission(user.id, guild_id, MODEL_LIST):
+            await ctx.reply(NO_ACCESS_NOTICE)
             return
 
         default_args = dict(DEFAULT_ARGS.items())
@@ -143,6 +142,12 @@ class KohakuNai(dc_commands.Cog):
             or default_args["model"] not in MODEL_LIST
         ):
             await ctx.reply(INVALID_NOTICE)
+            return
+
+        model = default_args["model"]
+        allowed, priority = check_permission(user.id, guild_id, model)
+        if not allowed:
+            await ctx.reply(model_denied_notice(model, user.id, guild_id, MODEL_LIST))
             return
 
         gen_command = make_summary(default_args, self.prefix, DEFAULT_ARGS)
@@ -232,16 +237,9 @@ class KohakuNai(dc_commands.Cog):
             return
         guild = interaction.guild
         user = interaction.user
-        user_priority = config.USER_PRIORITY.get(user.id, 0)
-        guild_priority = 0
-        if guild is not None:
-            guild_priority = config.GUILD_PRIORITY.get(guild.id, 0)
-        priority = max(guild_priority, user_priority)
-        if priority == 0 and config.WHITE_LIST:
-            await interaction.response.send_message(
-                "This command is not allowed for this server or user. "
-                "Please contact the bot owner for more information."
-            )
+        guild_id = guild.id if guild is not None else None
+        if not has_any_permission(user.id, guild_id, MODEL_LIST):
+            await interaction.response.send_message(NO_ACCESS_NOTICE)
             return
         embed = discord.Embed(title="Generation settings", color=0x50A4FF)
         embed.add_field(name="prompt", value=prompt, inline=False)
@@ -264,7 +262,8 @@ class KohakuNai(dc_commands.Cog):
                 scale=cfg_scale,
                 seed=seed,
                 images=images,
-                priority=priority,
+                user_id=user.id,
+                guild_id=guild_id,
                 quality_tags=quality_tags,
             ),
             ephemeral=True,

@@ -5,6 +5,7 @@ import discord
 
 from kohaku_nai.dc_bot_modules.functions import make_summary, log_error_command
 from kohaku_nai.dc_bot_modules import config
+from kohaku_nai.dc_bot_modules.permission import check_permission, model_denied_notice
 from kohaku_nai.utils import remote_gen, make_file_name
 from kohaku_nai.api import (
     set_client,
@@ -26,13 +27,18 @@ class NAIImageGen(discord.ui.View):
         scale,
         seed,
         images,
-        priority,
+        user_id,
+        guild_id,
         quality_tags,
     ):
         super().__init__()
         self.images = images
         self.origin = origin
         self.prefix = prefix
+        # Priority depends on the selected model, so it is resolved when the
+        # user actually hits Generate, not here.
+        self.user_id = user_id
+        self.guild_id = guild_id
         self.generate_config = {
             "prompt": prompt,
             "quality_tags": quality_tags,
@@ -46,7 +52,7 @@ class NAIImageGen(discord.ui.View):
             "sampler": "k_euler",
             "schedule": "native",
             "images": images,
-            "priority": priority,
+            "priority": 0,
             "model": "nai-diffusion-3",
         }
         print("VIEW created")
@@ -136,6 +142,16 @@ class NAIImageGen(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         try:
+            model = self.generate_config["model"]
+            allowed, priority = check_permission(self.user_id, self.guild_id, model)
+            if not allowed:
+                await interaction.response.send_message(
+                    model_denied_notice(model, self.user_id, self.guild_id, MODEL_LIST),
+                    ephemeral=True,
+                )
+                return
+            self.generate_config["priority"] = priority
+
             gen_command = make_summary(self.generate_config, self.prefix, DEFAULT_ARGS)
             await self.origin.edit_original_response(
                 content=f"### Generating with command:\nImages: (0/{self.images})\n{gen_command}",

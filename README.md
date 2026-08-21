@@ -81,13 +81,47 @@ use `python -m kohaku_nai.server` to run it.
 
 ### DC bot
 
-Check the example `dc-bot-config.json`. Change the token/prefix to your bot's. And the `url` and `passowrd` are for your gen-server.
+Copy `dc-bot-config.example.json` to `dc-bot-config.json`. Change the token/prefix to your bot's. And the `url` and `passowrd` are for your gen-server.
 
 And then run:
 
 ```
 python -m kohaku_nai.dc_bot
 ```
+
+#### Priority / per-model permission
+
+`guild_priority` and `user_priority` map a discord id to the queue priority that
+id gets. Since priority `0` already means "not allowed" when the white list is
+on, the same table also acts as the allow list.
+
+A value can be either a plain number (same priority for every model) or an
+object mapping model patterns to priorities, which is how you keep the new,
+heavier models limited to specific users or servers:
+
+```json
+"user_priority": {
+  "000000000000000003": 100,
+  "000000000000000004": {
+    "*": 20,
+    "nai-diffusion-5-*": 80,
+    "nai-diffusion-5-full": -1
+  }
+}
+```
+
+Rules:
+
+* Lookup order is exact model name, then the longest matching glob, then the
+  `"*"` fallback. No match at all means no grant, so omitting `"*"` restricts
+  the id to exactly the models it lists.
+* The final priority is `max(user, guild)` for that model, so a guild grant
+  covers everyone in the guild.
+* A **negative** value on a *user* entry is a hard deny for those models and
+  overrides whatever the guild would grant.
+
+Note this is enforced on the bot side only — the gen server itself does not
+filter by model, so treat the gen-server password as the real trust boundary.
 
 ---
 

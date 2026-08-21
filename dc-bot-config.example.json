@@ -1,17 +1,32 @@
 {
   "test_bots":[
     {
-      "name": "NAME",
-      "prefix": "xx.",
+      "name": "1234",
+      "prefix": "AI.",
       "description": "NAI bot",
       "extension_path": "kohaku_nai.dc_bot_modules.nai_bot",
-      "token": "YOUR TOKEN",
+      "token": "",
       "intents": true,
-      "url": "http://127.0.0.1:7000",
-      "password": "123456"
+      "url": "http://127.0.0.1:8256",
+      "password": "KohakuNAI",
+      "guild_priority": {
+        "000000000000000001": 10,
+        "000000000000000002": {
+          "*": 20,
+          "nai-diffusion-5-*": 0
+        }
+      },
+      "user_priority": {
+        "000000000000000003": 100,
+        "000000000000000004": {
+          "*": 20,
+          "nai-diffusion-5-*": 80,
+          "nai-diffusion-5-full": -1
+        }
+      }
     }
   ],
-  "python-script": "python",
+  "python-script": "python3",
   "pyinstaller": false,
   "pyinstaller-script": "runner.exe"
 }
