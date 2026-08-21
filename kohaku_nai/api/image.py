@@ -38,7 +38,7 @@ DEFAULT_ARGS = {
     "dyn_threshold": False,
     "cfg_rescale": 0,
     "images": 1,
-    "model": "nai-diffusion-3",
+    "model": "nai-diffusion-4-5-full",
 }
 MODEL_LIST = [
     "nai-diffusion",
@@ -53,7 +53,12 @@ MODEL_LIST = [
     "nai-diffusion-2",
     "nai-diffusion-3",
     "nai-diffusion-4-curated-preview",
-    "nai-diffusion-4-full"
+    "nai-diffusion-4-curated",
+    "nai-diffusion-4-full",
+    "nai-diffusion-4-5-curated",
+    "nai-diffusion-4-5-full",
+    "nai-diffusion-5-curated",
+    "nai-diffusion-5-full"
 ]
 
 
